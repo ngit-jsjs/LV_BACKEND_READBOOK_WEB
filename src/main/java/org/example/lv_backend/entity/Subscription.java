@@ -18,7 +18,7 @@ public class Subscription {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private SUB_STATUS status;
+    private SubStatus status;
 
     private LocalDateTime createdAt;
 

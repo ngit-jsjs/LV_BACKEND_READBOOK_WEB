@@ -38,7 +38,7 @@ public class Book {
     @Column(columnDefinition = "TEXT")
     private String description;
 
-    private BOOK_STATUS status;
+    private BookStatus status;
 
     private Integer totalChapters;
 

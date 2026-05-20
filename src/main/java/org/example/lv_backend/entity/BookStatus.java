@@ -1,5 +1,5 @@
 package org.example.lv_backend.entity;
 
-public enum BOOK_STATUS {
+public enum BookStatus {
     ONGOING, COMPLETED
 }
