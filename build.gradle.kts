@@ -33,6 +33,17 @@ dependencies {
     testCompileOnly("org.projectlombok:lombok")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
     testAnnotationProcessor("org.projectlombok:lombok")
+
+
+
+    implementation("org.springframework.security:spring-security-crypto")
+    // Source: https://mvnrepository.com/artifact/com.nimbusds/nimbus-jose-jwt
+    implementation("com.nimbusds:nimbus-jose-jwt:10.7")
+    implementation ("org.springframework.boot:spring-boot-starter-oauth2-resource-server")
+    implementation("org.mapstruct:mapstruct:1.5.5.Final")
+    annotationProcessor("org.mapstruct:mapstruct-processor:1.5.5.Final")
+    implementation("org.springframework.boot:spring-boot-starter-validation")
+
 }
 
 tasks.withType<Test> {
