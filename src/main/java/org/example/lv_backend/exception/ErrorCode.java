@@ -8,8 +8,12 @@ import org.springframework.http.HttpStatusCode;
 public enum ErrorCode {
     USERNAME_INVALID(1002,"Username must be at least 8 characters", HttpStatus.BAD_REQUEST),
     UNCATEGORIZED_EXCEPTION(9999,"Uncategorized Exceptions", HttpStatus.INTERNAL_SERVER_ERROR),
-    UNAUTHORIZED(1007,"You don't have permission",HttpStatus.FORBIDDEN),
-    ROLE_NOT_EXISTED(1008, "Role không tồn tại", HttpStatus.NOT_FOUND)
+    UNAUTHORIZED(1007,"Không có quyền",HttpStatus.FORBIDDEN),
+    ROLE_NOT_EXISTED(1008, "Role không tồn tại", HttpStatus.NOT_FOUND),
+    USER_NOT_EXISTED(1009,"User không tồn tại",HttpStatus.NOT_FOUND),
+    USER_EXISTED(1010,"User này đã tồn tại",HttpStatus.BAD_REQUEST),
+    EMAIL_EXISTED(1011,"Email này đã tồn tại",HttpStatus.BAD_REQUEST),
+    UNAUTHENTICATED(1012,"Lỗi token",HttpStatus.UNAUTHORIZED)
     ;
 
 

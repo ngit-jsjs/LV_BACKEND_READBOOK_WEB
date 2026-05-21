@@ -6,8 +6,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@JsonInclude(JsonInclude.Include.NON_NULL)
-//loại bỏ object có properties null trong json
+//@JsonInclude(JsonInclude.Include.NON_NULL)
+////loại bỏ object có properties null trong json
 @Data
 @Builder
 @AllArgsConstructor
