@@ -6,6 +6,7 @@ import lombok.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(name = "roles")
@@ -22,7 +23,6 @@ public class Role {
     @Column(nullable = false, unique = true)
     private RoleName rolename;
 
-    @OneToMany(mappedBy = "role")
-    @JsonIgnore
-    private List<User> users = new ArrayList<>();
+    @ManyToMany(mappedBy = "roles")
+    private Set<User> users;
 }

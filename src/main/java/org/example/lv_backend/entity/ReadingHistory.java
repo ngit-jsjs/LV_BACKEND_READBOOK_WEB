@@ -28,4 +28,8 @@ public class ReadingHistory {
     @ManyToOne
     @JoinColumn(name = "chapter_id")
     private Chapter chapter;
+
+    @ManyToOne
+    @JoinColumn(name = "book_id")
+    private Book book;
 }

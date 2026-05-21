@@ -5,6 +5,8 @@ import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "chapters")
@@ -39,4 +41,7 @@ public class Chapter {
         @ManyToOne
         @JoinColumn(name = "book_id")
         private Book book;
+
+        @OneToMany(mappedBy = "chapter")
+        private List<ChapterUnlock> chapterUnlocks = new ArrayList<>();
 }

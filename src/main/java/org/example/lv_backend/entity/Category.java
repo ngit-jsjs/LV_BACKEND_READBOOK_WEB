@@ -26,6 +26,5 @@ public class Category {
     private String description;
 
     @ManyToMany(mappedBy = "categories")
-    @JsonIgnore
     private Set<Book> books = new HashSet<>();
 }
