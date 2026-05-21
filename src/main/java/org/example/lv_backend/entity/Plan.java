@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "plans")
@@ -26,4 +28,7 @@ public class Plan {
     private Integer amount;
 
     private String type;
+
+    @OneToMany(mappedBy = "plan")
+    private List<Subscription> subscriptions = new ArrayList<>();
 }

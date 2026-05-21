@@ -40,6 +40,6 @@ out/
 application-prod.yaml
 .env
 *.log
-
+application.properties
 ### Jar ###
 *.jar

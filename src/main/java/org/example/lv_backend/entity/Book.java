@@ -55,7 +55,7 @@ public class Book {
     private User user;
 
     @OneToMany(mappedBy = "book", cascade = CascadeType.ALL)
-    @JsonIgnore
+
     private List<Chapter> chapters = new ArrayList<>();
 
     @ManyToMany
@@ -65,4 +65,18 @@ public class Book {
             inverseJoinColumns = @JoinColumn(name = "category_id")
     )
     private Set<Category> categories = new HashSet<>();
+
+    @OneToMany(mappedBy = "book")
+    private List<Rating> ratings = new ArrayList<>();
+
+    @ManyToMany(mappedBy = "books")
+    private Set<BookList> bookLists = new HashSet<>();
+
+    @OneToMany(mappedBy = "book")
+    private List<Recommendation> recommendations = new ArrayList<>();
+
+    @OneToMany(mappedBy = "chapter")
+    private List<ReadingHistory> readingHistories = new ArrayList<>();
+
+
 }

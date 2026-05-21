@@ -10,6 +10,6 @@ import java.io.Serializable;
 @AllArgsConstructor
 @EqualsAndHashCode
 public class ChapterUnlockId implements Serializable {
-    private Long user;
+    private Integer user;
     private Long chapter;
 }

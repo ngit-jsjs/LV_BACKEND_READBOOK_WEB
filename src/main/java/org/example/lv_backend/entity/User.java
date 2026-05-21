@@ -8,6 +8,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 @Entity
@@ -43,11 +44,44 @@ public class User {
 
     private LocalDateTime updatedAt;
 
-    @ManyToOne
-    @JoinColumn(name = "role_id")
-    private Role role;
+    @ManyToMany
+    @JoinTable(
+            name = "user_roles",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "role_id")
+    )
+    @Enumerated(EnumType.STRING)
+    private Set<Role> roles;
 
     @OneToMany(mappedBy = "user")
-    @JsonIgnore
     private List<Book> books = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user")
+    private List<Rating> ratings = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user")
+    private List<Subscription> subscriptions = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user")
+    private List<Payment> payments = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user")
+    private List<BookList> bookLists = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user")
+    private List<ChapterUnlock> chapterUnlocks = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user")
+    private List<InvalidatedToken> invalidatedTokens = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user")
+    private List<Recommendation> recommendations = new ArrayList<>();
+
+    @OneToMany(mappedBy = "userA")
+    private List<UserSim> userSimsA = new ArrayList<>();
+
+    @OneToMany(mappedBy = "userB")
+    private List<UserSim> userSimsB = new ArrayList<>();
+    @OneToMany(mappedBy = "user")
+    private List<ReadingHistory> readingHistories = new ArrayList<>();
 }

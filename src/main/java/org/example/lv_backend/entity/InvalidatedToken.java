@@ -15,7 +15,7 @@ import java.time.LocalDateTime;
 public class InvalidatedToken {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Integer id;
 
     @Column(columnDefinition = "TEXT")
     private String token;

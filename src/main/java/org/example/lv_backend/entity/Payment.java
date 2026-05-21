@@ -24,7 +24,7 @@ public class Payment {
 
     private String vnpayTxnRef;
 
-    private String status;
+    private PaymentStatus status;
 
     private LocalDateTime createdAt;
 
