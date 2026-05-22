@@ -25,6 +25,8 @@ public class Chapter {
 
         private String title;
 
+        @Lob
+        @Basic(fetch = FetchType.LAZY)
         @Column(columnDefinition = "TEXT")
         private String content;
 
@@ -38,7 +40,7 @@ public class Chapter {
 
         private LocalDateTime updatedAt;
 
-        @ManyToOne
+        @ManyToOne(fetch = FetchType.LAZY)
         @JoinColumn(name = "book_id")
         private Book book;
 

@@ -2,6 +2,8 @@ package org.example.lv_backend.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -20,21 +22,16 @@ public class Payment {
 
     private BigDecimal amount;
 
-    private String paymentMethod;
-
     private String vnpayTxnRef;
 
     private PaymentStatus status;
 
+    @CreationTimestamp
     private LocalDateTime createdAt;
 
     private LocalDateTime paidAt;
 
-    @ManyToOne
-    @JoinColumn(name = "user_id")
-    private User user;
-
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "subscription_id")
     private Subscription subscription;
 }

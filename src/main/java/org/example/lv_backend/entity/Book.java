@@ -3,6 +3,8 @@ package org.example.lv_backend.entity;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -21,7 +23,7 @@ import java.util.Set;
 public class Book {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    private Long id;
 
     @Column(nullable = false)
     private String title;
@@ -32,12 +34,15 @@ public class Book {
 
     private String coverImageUrl;
 
+    private Integer year;
+
     @Column(unique = true)
     private String slug;
 
     @Column(columnDefinition = "TEXT")
     private String description;
 
+    @Enumerated(EnumType.STRING)
     private BookStatus status;
 
     private Integer totalChapters;
@@ -45,12 +50,12 @@ public class Book {
     private Integer viewCount;
 
     private BigDecimal averageRating;
-
+    @CreationTimestamp
     private LocalDateTime createdAt;
-
+    @UpdateTimestamp
     private LocalDateTime updatedAt;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
 
@@ -75,7 +80,7 @@ public class Book {
     @OneToMany(mappedBy = "book")
     private List<Recommendation> recommendations = new ArrayList<>();
 
-    @OneToMany(mappedBy = "chapter")
+    @OneToMany(mappedBy = "book")
     private List<ReadingHistory> readingHistories = new ArrayList<>();
 
 

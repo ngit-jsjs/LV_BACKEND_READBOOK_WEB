@@ -3,6 +3,8 @@ package org.example.lv_backend.entity;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -40,8 +42,9 @@ public class User {
     @Builder.Default
     private Boolean isActive = true;
 
+    @CreationTimestamp
     private LocalDateTime createdAt;
-
+    @UpdateTimestamp
     private LocalDateTime updatedAt;
 
     @ManyToMany
@@ -50,7 +53,6 @@ public class User {
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "role_id")
     )
-    @Enumerated(EnumType.STRING)
     private Set<Role> roles;
 
     @OneToMany(mappedBy = "user")
@@ -62,8 +64,7 @@ public class User {
     @OneToMany(mappedBy = "user")
     private List<Subscription> subscriptions = new ArrayList<>();
 
-    @OneToMany(mappedBy = "user")
-    private List<Payment> payments = new ArrayList<>();
+
 
     @OneToMany(mappedBy = "user")
     private List<BookList> bookLists = new ArrayList<>();
@@ -71,17 +72,13 @@ public class User {
     @OneToMany(mappedBy = "user")
     private List<ChapterUnlock> chapterUnlocks = new ArrayList<>();
 
-    @OneToMany(mappedBy = "user")
-    private List<InvalidatedToken> invalidatedTokens = new ArrayList<>();
+
 
     @OneToMany(mappedBy = "user")
     private List<Recommendation> recommendations = new ArrayList<>();
 
-    @OneToMany(mappedBy = "userA")
-    private List<UserSim> userSimsA = new ArrayList<>();
 
-    @OneToMany(mappedBy = "userB")
-    private List<UserSim> userSimsB = new ArrayList<>();
+
     @OneToMany(mappedBy = "user")
     private List<ReadingHistory> readingHistories = new ArrayList<>();
 }

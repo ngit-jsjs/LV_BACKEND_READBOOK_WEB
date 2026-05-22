@@ -2,6 +2,7 @@ package org.example.lv_backend.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 
@@ -17,19 +18,18 @@ public class ReadingHistory {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private Integer readCount;
-
-    private LocalDateTime lastReadAt;
-
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
 
-    @ManyToOne
-    @JoinColumn(name = "chapter_id")
-    private Chapter chapter;
-
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "book_id")
     private Book book;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "last_chapter_id")
+    private Chapter lastReadChapter;
+
+    @UpdateTimestamp
+    private LocalDateTime updatedAt;
 }

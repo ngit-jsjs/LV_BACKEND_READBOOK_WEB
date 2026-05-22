@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.Date;
 
 @Entity
 @Table(name = "invalidated_tokens")
@@ -14,15 +15,9 @@ import java.time.LocalDateTime;
 @Builder
 public class InvalidatedToken {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    private String id;
 
-    @Column(columnDefinition = "TEXT")
-    private String token;
+    private Date expiryTime;
 
-    private LocalDateTime expiryTime;
 
-    @ManyToOne
-    @JoinColumn(name = "user_id")
-    private User user;
 }

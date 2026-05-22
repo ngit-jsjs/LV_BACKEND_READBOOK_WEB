@@ -1,5 +1,6 @@
 package org.example.lv_backend.entity;
 
+import jakarta.persistence.Entity;
 import lombok.*;
 
 import java.io.Serializable;

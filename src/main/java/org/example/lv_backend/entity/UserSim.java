@@ -16,16 +16,17 @@ import java.time.LocalDateTime;
 @IdClass(UserSimId.class)
 public class UserSim {
     @Id
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id_a")
     private User userA;
 
     @Id
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id_b")
     private User userB;
 
     private BigDecimal similarityScore;
+
 
     private LocalDateTime createdAt;
 }

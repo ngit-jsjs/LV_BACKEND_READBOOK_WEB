@@ -1,4 +1,4 @@
-package org.example.lv_backend.dto.response;
+package org.example.lv_backend.dto.response.user;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

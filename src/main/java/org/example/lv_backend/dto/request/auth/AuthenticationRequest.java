@@ -1,4 +1,4 @@
-package org.example.lv_backend.dto.request;
+package org.example.lv_backend.dto.request.auth;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

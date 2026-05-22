@@ -2,6 +2,7 @@ package org.example.lv_backend.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -22,15 +23,14 @@ public class Subscription {
 
     private SubStatus status;
 
+    @CreationTimestamp
     private LocalDateTime createdAt;
 
-    private LocalDateTime expiredAt;
-
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "plan_id")
     private Plan plan;
 
