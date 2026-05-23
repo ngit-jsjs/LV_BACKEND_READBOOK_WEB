@@ -43,3 +43,5 @@ application-prod.yaml
 application.properties
 ### Jar ###
 *.jar
+
+src/main/resources/application.properties
