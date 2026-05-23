@@ -25,9 +25,7 @@ public class Plan {
 
     private BigDecimal price;
 
-    private Integer amount;
-
-    private String type;
+    private Long amount;
 
     @OneToMany(mappedBy = "plan")
     private List<Subscription> subscriptions = new ArrayList<>();

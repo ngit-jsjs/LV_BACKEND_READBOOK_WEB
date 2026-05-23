@@ -18,10 +18,11 @@ import java.util.Set;
 public class Role {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    private Long id;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false, unique = true)
-    private RoleName rolename;
+    private RoleName roleName;
 
     @ManyToMany(mappedBy = "roles")
     private Set<User> users;

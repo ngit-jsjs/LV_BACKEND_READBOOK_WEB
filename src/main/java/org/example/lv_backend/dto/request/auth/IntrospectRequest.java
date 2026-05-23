@@ -1,4 +1,4 @@
-package org.example.lv_backend.dto.request;
+package org.example.lv_backend.dto.request.auth;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,8 +9,6 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class AuthenticationRequest {
-    private String email;
-    private String password;
-
+public class IntrospectRequest {
+    String token;
 }

@@ -21,10 +21,12 @@ public class Chapter {
         @GeneratedValue(strategy = GenerationType.IDENTITY)
         private Long id;
 
-        private Integer chapterNumber;
+        private Long chapterNumber;
 
         private String title;
 
+        @Lob
+        @Basic(fetch = FetchType.LAZY)
         @Column(columnDefinition = "TEXT")
         private String content;
 
@@ -38,7 +40,7 @@ public class Chapter {
 
         private LocalDateTime updatedAt;
 
-        @ManyToOne
+        @ManyToOne(fetch = FetchType.LAZY)
         @JoinColumn(name = "book_id")
         private Book book;
 

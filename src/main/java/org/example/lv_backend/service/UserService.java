@@ -1,8 +1,8 @@
 package org.example.lv_backend.service;
 
 import lombok.RequiredArgsConstructor;
-import org.example.lv_backend.dto.request.UserCreationRequest;
-import org.example.lv_backend.dto.response.UserResponse;
+import org.example.lv_backend.dto.request.user.UserCreationRequest;
+import org.example.lv_backend.dto.response.user.UserResponse;
 import org.example.lv_backend.entity.Role;
 import org.example.lv_backend.entity.RoleName;
 import org.example.lv_backend.entity.User;
@@ -16,7 +16,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.HashSet;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -51,7 +50,7 @@ public class UserService {
         response.setRoles(
                 user.getRoles()
                         .stream()
-                        .map(Role::getRolename)
+                        .map(Role::getRoleName)
                         .collect(Collectors.toSet())
         );
 

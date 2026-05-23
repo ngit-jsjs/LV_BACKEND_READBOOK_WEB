@@ -15,12 +15,12 @@ import java.time.LocalDateTime;
 @IdClass(ChapterUnlockId.class)
 public class ChapterUnlock {
     @Id
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
 
     @Id
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "chapter_id")
     private Chapter chapter;
 

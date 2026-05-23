@@ -3,6 +3,8 @@ package org.example.lv_backend.entity;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -21,7 +23,7 @@ import java.util.Set;
 public class Book {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    private Long id;
 
     @Column(nullable = false)
     private String title;
@@ -32,30 +34,32 @@ public class Book {
 
     private String coverImageUrl;
 
+    private Long year;
+
     @Column(unique = true)
     private String slug;
 
     @Column(columnDefinition = "TEXT")
     private String description;
 
+    @Enumerated(EnumType.STRING)
     private BookStatus status;
 
-    private Integer totalChapters;
+    private Long totalChapters;
 
-    private Integer viewCount;
-
-    private BigDecimal averageRating;
-
+//    private Long viewCount;
+//
+//    private BigDecimal averageRating;
+    @CreationTimestamp
     private LocalDateTime createdAt;
-
+    @UpdateTimestamp
     private LocalDateTime updatedAt;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
 
     @OneToMany(mappedBy = "book", cascade = CascadeType.ALL)
-
     private List<Chapter> chapters = new ArrayList<>();
 
     @ManyToMany
@@ -75,7 +79,7 @@ public class Book {
     @OneToMany(mappedBy = "book")
     private List<Recommendation> recommendations = new ArrayList<>();
 
-    @OneToMany(mappedBy = "chapter")
+    @OneToMany(mappedBy = "book")
     private List<ReadingHistory> readingHistories = new ArrayList<>();
 
 
