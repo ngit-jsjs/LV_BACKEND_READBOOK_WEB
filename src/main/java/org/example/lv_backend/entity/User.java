@@ -8,10 +8,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 @Entity
 @Table(name = "users")
@@ -23,7 +20,7 @@ import java.util.UUID;
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    private Long id;
 
     @Column(nullable = false, unique = true)
     private String email;
@@ -34,18 +31,15 @@ public class User {
     @Column(nullable = false)
     private String password;
 
-    private String avatarUrl;
 
     @Builder.Default
     private BigDecimal amount = BigDecimal.ZERO;
 
-    @Builder.Default
-    private Boolean isActive = true;
 
-    @CreationTimestamp
-    private LocalDateTime createdAt;
-    @UpdateTimestamp
-    private LocalDateTime updatedAt;
+//    @CreationTimestamp
+//    private Date createdAt;
+//    @UpdateTimestamp
+//    private Date updatedAt;
 
     @ManyToMany
     @JoinTable(
@@ -64,6 +58,8 @@ public class User {
     @OneToMany(mappedBy = "user")
     private List<Subscription> subscriptions = new ArrayList<>();
 
+    @OneToMany(mappedBy = "user")
+    private List<Payment> payments = new ArrayList<>();
 
 
     @OneToMany(mappedBy = "user")

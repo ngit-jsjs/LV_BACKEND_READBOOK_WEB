@@ -19,7 +19,7 @@ public class Rating {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private Integer ratings;
+    private Long ratings;
 
     @Column(columnDefinition = "TEXT")
     private String comment;

@@ -28,5 +28,5 @@ public class UserSim {
     private BigDecimal similarityScore;
 
 
-    private LocalDateTime createdAt;
+//    private LocalDateTime createdAt;
 }

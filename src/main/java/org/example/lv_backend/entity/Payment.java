@@ -24,6 +24,7 @@ public class Payment {
 
     private String vnpayTxnRef;
 
+    @Enumerated(EnumType.STRING)
     private PaymentStatus status;
 
     @CreationTimestamp
@@ -32,6 +33,6 @@ public class Payment {
     private LocalDateTime paidAt;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "subscription_id")
-    private Subscription subscription;
+    @JoinColumn(name = "user_id")
+    private User user;
 }

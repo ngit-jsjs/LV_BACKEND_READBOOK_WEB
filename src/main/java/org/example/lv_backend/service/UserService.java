@@ -50,7 +50,7 @@ public class UserService {
         response.setRoles(
                 user.getRoles()
                         .stream()
-                        .map(Role::getRolename)
+                        .map(Role::getRoleName)
                         .collect(Collectors.toSet())
         );
 

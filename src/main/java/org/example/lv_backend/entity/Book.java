@@ -34,7 +34,7 @@ public class Book {
 
     private String coverImageUrl;
 
-    private Integer year;
+    private Long year;
 
     @Column(unique = true)
     private String slug;
@@ -45,11 +45,11 @@ public class Book {
     @Enumerated(EnumType.STRING)
     private BookStatus status;
 
-    private Integer totalChapters;
+    private Long totalChapters;
 
-    private Integer viewCount;
-
-    private BigDecimal averageRating;
+//    private Long viewCount;
+//
+//    private BigDecimal averageRating;
     @CreationTimestamp
     private LocalDateTime createdAt;
     @UpdateTimestamp
@@ -60,7 +60,6 @@ public class Book {
     private User user;
 
     @OneToMany(mappedBy = "book", cascade = CascadeType.ALL)
-
     private List<Chapter> chapters = new ArrayList<>();
 
     @ManyToMany

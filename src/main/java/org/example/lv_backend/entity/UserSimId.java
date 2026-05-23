@@ -10,6 +10,6 @@ import java.io.Serializable;
 @AllArgsConstructor
 @EqualsAndHashCode
 public class UserSimId implements Serializable {
-    private Integer userA;
-    private Integer userB;
+    private Long userA;
+    private Long userB;
 }
