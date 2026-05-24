@@ -17,18 +17,18 @@ import org.springframework.security.web.SecurityFilterChain;
 @EnableMethodSecurity
 public class SecurityConfig {
 
-    private final String[] PUBLIC_ENDPOINTS = {"/users","/auth/login","/auth/introspect","/auth/logout"};
+    private final String[] PUBLIC_ENDPOINTS = {"/user","/auth/login","/auth/introspect","/auth/logout","/user/create","/user/search"};
 
     @Autowired
     private CustomJwtDecoder customJwtDecoder;
-    @Bean
 
+    @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.csrf(AbstractHttpConfigurer::disable);
 
         http.authorizeHttpRequests(request -> request
                         .requestMatchers(HttpMethod.POST, PUBLIC_ENDPOINTS).permitAll()
-//                .requestMatchers(HttpMethod.GET,"/users").hasAuthority("SCOPE_ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/user/search").permitAll()
                         .anyRequest().authenticated()
 
         );
