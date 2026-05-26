@@ -11,8 +11,8 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class BookListSummaryResponse {
+public class BookListResponse {
     private Long id;
     private String name;
-    private List<BookSummaryResponse> books;
+    private List<BookResponse> books;
 }

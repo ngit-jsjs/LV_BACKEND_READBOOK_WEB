@@ -1,25 +1,26 @@
 package org.example.lv_backend.mapper;
 
-import org.example.lv_backend.dto.response.book.BookListSummaryResponse;
-import org.example.lv_backend.dto.response.book.BookSummaryResponse;
+import org.example.lv_backend.dto.request.book.BookCreationRequest;
+import org.example.lv_backend.dto.response.book.BookListResponse;
+import org.example.lv_backend.dto.response.book.BookResponse;
 import org.example.lv_backend.entity.Book;
 import org.example.lv_backend.entity.BookList;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.springframework.data.domain.Page;
 
 import java.util.List;
-import java.util.Set;
 
 @Mapper(componentModel = "spring")
 public interface BookMapper {
 
-    BookSummaryResponse toBookSummary(Book book);
 
-    List<BookSummaryResponse> toBookSummaryList(List<Book> books);
+    BookResponse toBookResponse(Book book);
 
-    List<BookSummaryResponse> toBookSummaryListFromSet(Set<Book> books);
+    @Mapping(target = "categories", ignore = true)
+    Book toBook(BookCreationRequest request);
+    @Mapping(target = "categories", ignore = true)
 
-    BookListSummaryResponse toBookListSummary(BookList bookList);
-
-    List<BookListSummaryResponse> toBookListSummaryList(List<BookList> bookLists);
+    BookResponse updateBook(Book book, BookCreationRequest request);
 }
 

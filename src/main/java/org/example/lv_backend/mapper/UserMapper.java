@@ -1,7 +1,7 @@
 package org.example.lv_backend.mapper;
 
 import org.example.lv_backend.dto.request.user.UserCreationRequest;
-import org.example.lv_backend.dto.response.user.SearchingAuthorResponse;
+import org.example.lv_backend.dto.response.user.SearchingUserResponse;
 import org.example.lv_backend.dto.response.user.UserResponse;
 import org.example.lv_backend.entity.User;
 import org.example.lv_backend.dto.request.user.UserUpdateRequest;
@@ -19,5 +19,5 @@ public interface UserMapper {
     @Mapping(target = "password", ignore = true)
     void updateUser(@MappingTarget User user, UserUpdateRequest request);
 
-    SearchingAuthorResponse toAuthorResponse(User user);
+    SearchingUserResponse toSearchingUserResponse(User user);
 }

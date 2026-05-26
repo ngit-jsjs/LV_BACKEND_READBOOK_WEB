@@ -22,9 +22,8 @@ public interface UserRepository extends JpaRepository<User,Long> {
 
     Optional<User>findByName(String name);
 
-    Page<User> findDistinctByNameContainingIgnoreCaseAndRoles_RoleName(
+    Page<User> findDistinctByNameContainingIgnoreCase(
             String keyword,
-            RoleName roleName,
             Pageable pageable
     );
     //hong hiểu

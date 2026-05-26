@@ -1,4 +1,4 @@
-package org.example.lv_backend.service.auth;
+package org.example.lv_backend.service;
 
 import com.nimbusds.jose.*;
 import com.nimbusds.jose.crypto.MACSigner;
@@ -21,7 +21,6 @@ import org.example.lv_backend.exception.ErrorCode;
 import org.example.lv_backend.repository.InvalidatedTokenRepository;
 import org.example.lv_backend.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 

@@ -9,8 +9,9 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class SearchingAuthorResponse {
+public class SearchingUserResponse {
     private Long id;
 
     private String name;
+    private String email;
 }

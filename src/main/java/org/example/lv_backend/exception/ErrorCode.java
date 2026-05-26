@@ -14,8 +14,10 @@ public enum ErrorCode {
     USER_EXISTED(1010,"User này đã tồn tại",HttpStatus.BAD_REQUEST),
     EMAIL_EXISTED(1011,"Email này đã tồn tại",HttpStatus.BAD_REQUEST),
     UNAUTHENTICATED(1012,"Lỗi token",HttpStatus.UNAUTHORIZED),
-    ALREADY_AUTHENTICATED(1013,"Người dùng đã đăng nhập",HttpStatus.BAD_REQUEST)
-    ;
+    ALREADY_AUTHENTICATED(1013,"Người dùng đã đăng nhập",HttpStatus.BAD_REQUEST),
+    NAMEBOOK_EXISTED(1014,"Tên sách này đã tồn tại",HttpStatus.BAD_REQUEST),
+    BOOK_NOT_EXISTED(1015,"Sách không tồn tại",HttpStatus.NOT_FOUND),
+    UNAUTHORIZED_BOOK(1007,"Không có quyền chỉnh sửa nội dung sách",HttpStatus.FORBIDDEN);
 
 
 

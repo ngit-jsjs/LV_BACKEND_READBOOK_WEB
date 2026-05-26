@@ -1,20 +1,17 @@
 package org.example.lv_backend.controller;
 
-import jakarta.annotation.security.PermitAll;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.lv_backend.dto.request.user.UserCreationRequest;
 import org.example.lv_backend.dto.request.user.UserUpdateRequest;
 import org.example.lv_backend.dto.response.ApiResponse;
-import org.example.lv_backend.dto.response.user.SearchingAuthorResponse;
+import org.example.lv_backend.dto.response.user.SearchingUserResponse;
 import org.example.lv_backend.dto.response.user.UserResponse;
 import org.example.lv_backend.service.UserService;
 import org.springframework.data.domain.Page;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @Slf4j
 @RestController
@@ -32,17 +29,18 @@ public class UserController {
     }
 
 
+    @PreAuthorize("hasAnyAuthority('SCOPE_ADMIN')")
     @GetMapping("/search")
-    public ApiResponse<Page<SearchingAuthorResponse>> searchAuthor(@RequestParam String keyword,
-                                                                   @RequestParam(defaultValue = "1") int page,
-                                                                   @RequestParam(defaultValue = "10") int size){
+    public ApiResponse<Page<SearchingUserResponse>> searchUser(@RequestParam String keyword,
+                                                               @RequestParam(defaultValue = "1") int page,
+                                                               @RequestParam(defaultValue = "10") int size){
 
-        ApiResponse<SearchingAuthorResponse> apiResponse = new ApiResponse<>();
+        ApiResponse<SearchingUserResponse> apiResponse = new ApiResponse<>();
 
-        Page<SearchingAuthorResponse> responses =
-                userService.searchAuthor(keyword,page,size);
+        Page<SearchingUserResponse> responses =
+                userService.searchUser(keyword,page,size);
 
-        return apiResponse.<Page<SearchingAuthorResponse>>builder()
+        return apiResponse.<Page<SearchingUserResponse>>builder()
                 .result(responses)
                 .build();
     }
@@ -64,6 +62,7 @@ public class UserController {
     UserResponse updateUser(@PathVariable("userId") Long userId, @RequestBody UserUpdateRequest request){
         return userService.updateUser(userId,request);
     }
+
 
     @PreAuthorize("hasAnyAuthority('SCOPE_ADMIN')")
     @DeleteMapping("/{userId}")
