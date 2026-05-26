@@ -34,7 +34,7 @@ import static java.util.stream.Collectors.toList;
 public class BookService {
     private final BookMapper bookMapper;
     private final BookRepository bookRepository;
-
+    private final CategoryRepository categoryRepository;
 
 
     //sach viet boi user
@@ -47,6 +47,8 @@ public class BookService {
         Page<Book> bookList = bookRepository.findByUserName(name,pageable);
 
         Page<BookResponse> response = bookList.map(bookMapper::toBookResponse);
+
+
 
         return response;
     }
@@ -83,9 +85,21 @@ public class BookService {
 //        suy nghĩ về việc lưu thêm normalize title? để tránh nhập bậy bạ vẫn có thể trùng? hoặc xử lí ở frontend
 
         if(bookRepository.existsByTitle(title))
-            throw new AppException(ErrorCode.BOOK_EXISTED);
+            throw new AppException(ErrorCode.NAMEBOOK_EXISTED);
 
-        Book book= bookMapper.toBook(request);
+
+        List<Category> categoryList = categoryRepository.findAllById(request.getCategoryIds());
+
+        Set<Category> categories = new HashSet<>();
+
+        for (Category category : categoryList) {
+            categories.add(category);
+        }
+
+        Book book = bookMapper.toBook(request);
+
+        book.setCategories(categories);
+
 
         BookResponse response = bookMapper.toBookResponse(bookRepository.save(book));
 
@@ -94,11 +108,33 @@ public class BookService {
     }
 
 
-
     public BookResponse updateBook(Long id, BookCreationRequest request){
         Book book=bookRepository.findById(id).
                 orElseThrow(()->new AppException(ErrorCode.BOOK_NOT_EXISTED));
+        var title = request.getTitle();
+//                            .trim()
+//                            .toLowerCase()
+//                            .replaceAll("[^\\p{L}\\p{N}\\s]", "")
+//                            .replaceAll("\\s+", " ");
+//        suy nghĩ về việc lưu thêm normalize title? để tránh nhập bậy bạ vẫn có thể trùng? hoặc xử lí ở frontend
+
+        if(bookRepository.existsByTitle(title))
+            throw new AppException(ErrorCode.NAMEBOOK_EXISTED);
+
+        if(!bookRepository.existsByUserName(request.getAuthor()))
+            throw new AppException(ErrorCode.NAMEBOOK_EXISTED);
+
         bookMapper.updateBook(book, request);
+        //kiem tra dieu kien
+        List<Category> categoryList = categoryRepository.findAllById(request.getCategoryIds());
+
+        Set<Category> categories = new HashSet<>();
+        for (Category category : categoryList) {
+            categories.add(category);
+        }
+
+
+        book.setCategories(categories);
 
         return bookMapper.toBookResponse(bookRepository.save(book));
 

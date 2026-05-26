@@ -6,6 +6,9 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.example.lv_backend.entity.BookStatus;
 
+import java.time.LocalDateTime;
+import java.util.Set;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -20,5 +23,8 @@ public class BookResponse {
     private String description;
     private String publisher;
     private Long year;
+    private Set<String> categories;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 }
 
