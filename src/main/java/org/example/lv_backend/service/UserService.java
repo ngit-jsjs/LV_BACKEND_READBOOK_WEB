@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.example.lv_backend.configuration.Configuration;
 import org.example.lv_backend.dto.request.user.UserCreationRequest;
 import org.example.lv_backend.dto.request.user.UserUpdateRequest;
-import org.example.lv_backend.dto.response.user.SearchingAuthorResponse;
+import org.example.lv_backend.dto.response.user.SearchingUserResponse;
 import org.example.lv_backend.dto.response.user.UserResponse;
 import org.example.lv_backend.entity.Role;
 import org.example.lv_backend.entity.RoleName;
@@ -22,6 +22,7 @@ import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -34,6 +35,7 @@ public class UserService {
     private final BookMapper bookMapper;
     private final RoleRepository roleRepository;
     private final Configuration configuration;
+
 
     public UserResponse createUser (UserCreationRequest request){
 
@@ -56,8 +58,12 @@ public class UserService {
 
         user.setPassword( configuration.passwordEncoder().encode(request.getPassword()));
 
+        BigDecimal amount=BigDecimal.valueOf(100);
+        user.setAmount(amount);
+
         Role role = roleRepository.findByRoleName(RoleName.USER).orElseThrow(
                 () -> new AppException(ErrorCode.ROLE_NOT_EXISTED));
+
 
         Set<Role> roles=new HashSet<>();
         roles.add(role);
@@ -94,11 +100,8 @@ public class UserService {
                         .collect(Collectors.toSet())
         );
 
-        // Set published books (sách đã đăng)
-        response.setPublishedBooks(bookMapper.toBookSummaryList(user.getBooks()));
+        response.setAmount(user.getAmount());
 
-        // Set book lists (sách đã lưu)
-        response.setBookLists(bookMapper.toBookListSummaryList(user.getBookLists()));
 
         return response;
     }
@@ -115,6 +118,15 @@ public class UserService {
 
     }
 
+//    public UserResponse updateAuthor(Long id, UserUpdateRequest request){
+//        User user=userRepository.findById(id).
+//                orElseThrow(()->new AppException(ErrorCode.USER_NOT_EXISTED));
+//        userMapper.updateUser(user, request);
+//
+//        return userMapper.toUserResponse(userRepository.save(user));
+//
+//    }
+
 
     public void deleteUser(Long userId){
         userRepository.deleteById(userId);
@@ -122,19 +134,19 @@ public class UserService {
 
 
 
-    public Page<SearchingAuthorResponse> searchAuthor (String keyword, int page, int size){
+    public Page<SearchingUserResponse> searchUser (String keyword, int page, int size){
         Pageable pageable = PageRequest.of(page, size);
 
-        Page<User> authors =
+        Page<User> users =
                 userRepository
-                        .findDistinctByNameContainingIgnoreCaseAndRoles_RoleName(
+                        .findDistinctByNameContainingIgnoreCase(
                                 keyword,
-                                RoleName.AUTHOR,
                                 pageable
                         );
 
-        return authors.map(userMapper::toAuthorResponse);
+        return users.map(userMapper::toSearchingUserResponse);
     }
+
 
 
 

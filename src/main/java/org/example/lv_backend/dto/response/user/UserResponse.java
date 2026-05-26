@@ -4,11 +4,9 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.example.lv_backend.dto.response.book.BookListSummaryResponse;
-import org.example.lv_backend.dto.response.book.BookSummaryResponse;
 import org.example.lv_backend.entity.RoleName;
 
-import java.util.List;
+import java.math.BigDecimal;
 import java.util.Set;
 
 @Data
@@ -20,6 +18,7 @@ public class UserResponse {
     private String email;
     private String name;
     private Set<RoleName> roles;
-    private List<BookSummaryResponse> publishedBooks;
-    private List<BookListSummaryResponse> bookLists;
+    private BigDecimal amount;
+//    private List<PublishedBookResponse> publishedBooks;
+//    private List<FavoriteBookResponse> favortiteBook;
 }
