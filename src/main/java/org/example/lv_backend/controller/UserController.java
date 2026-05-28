@@ -31,8 +31,8 @@ public class UserController {
 
     @PreAuthorize("hasAnyAuthority('SCOPE_ADMIN')")
     @GetMapping("/search")
-    public ApiResponse<Page<SearchingUserResponse>> searchUser(@RequestParam String keyword,
-                                                               @RequestParam(defaultValue = "1") int page,
+    public ApiResponse<Page<SearchingUserResponse>> searchUser(@RequestParam(required = false, defaultValue = "") String keyword,
+                                                               @RequestParam(defaultValue = "0") int page,
                                                                @RequestParam(defaultValue = "10") int size){
 
         ApiResponse<SearchingUserResponse> apiResponse = new ApiResponse<>();
@@ -50,6 +50,14 @@ public class UserController {
     ApiResponse<UserResponse> getMyInfo(){
         return ApiResponse.<UserResponse>builder()
                 .result(userService.getMyInfo())
+                .build();
+    }
+
+    @PreAuthorize("hasAnyAuthority('SCOPE_USER')")
+    @PostMapping("/upgrade-author")
+    public ApiResponse<org.example.lv_backend.dto.response.auth.AuthenticationResponse> upgradeToAuthor() {
+        return ApiResponse.<org.example.lv_backend.dto.response.auth.AuthenticationResponse>builder()
+                .result(userService.upgradeToAuthor())
                 .build();
     }
 
@@ -72,7 +80,15 @@ public class UserController {
     }
 
 
+    @GetMapping("/{userId}")
+    public ApiResponse<SearchingUserResponse> getUserById(
+            @PathVariable Long userId
+    ){
 
+        return ApiResponse.<SearchingUserResponse>builder()
+                .result(userService.getUserById(userId))
+                .build();
+    }
 
 
 }

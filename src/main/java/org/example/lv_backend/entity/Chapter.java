@@ -36,6 +36,8 @@ public class Chapter {
 
         private BigDecimal price;
 
+
+
         private LocalDateTime createdAt;
 
         private LocalDateTime updatedAt;
@@ -46,4 +48,19 @@ public class Chapter {
 
         @OneToMany(mappedBy = "chapter")
         private List<ChapterUnlock> chapterUnlocks = new ArrayList<>();
+
+
+        public void markAsFree() {
+                this.isFree = true;
+                this.price = BigDecimal.ZERO;
+        }
+
+        public void setPrice(BigDecimal price) {
+
+                if(price.compareTo(BigDecimal.ZERO) < 0){
+                        throw new IllegalArgumentException();
+                }
+
+                this.price = price;
+        }
 }

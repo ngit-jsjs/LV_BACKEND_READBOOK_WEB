@@ -8,7 +8,7 @@ import com.nimbusds.jwt.SignedJWT;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.NonFinal;
 import lombok.extern.slf4j.Slf4j;
-import org.example.lv_backend.configuration.Configuration;
+import org.example.lv_backend.configuration.WebConfig;
 import org.example.lv_backend.dto.request.auth.AuthenticationRequest;
 import org.example.lv_backend.dto.request.auth.IntrospectRequest;
 import org.example.lv_backend.dto.request.auth.LogoutRequest;
@@ -37,7 +37,7 @@ import java.util.UUID;
 public class AuthenticationService {
     private final InvalidatedTokenRepository invalidatedTokenRepository;
     private final UserRepository userRepository;
-    private final Configuration configuration;
+    private final WebConfig webConfig;
 
     @NonFinal
     @Value("${jwt.secretKey}")
@@ -50,7 +50,7 @@ public class AuthenticationService {
         );
 
 
-        boolean authenticated = configuration.passwordEncoder().matches(authenticationRequest.getPassword(), user.getPassword());
+        boolean authenticated = webConfig.passwordEncoder().matches(authenticationRequest.getPassword(), user.getPassword());
 
         if (!authenticated)
             throw new AppException(ErrorCode.UNAUTHENTICATED);
@@ -79,7 +79,7 @@ public class AuthenticationService {
                 .build();
     }
 
-    private String generateToken(User user) {
+    public String generateToken(User user) {
         JWSHeader header = new JWSHeader(JWSAlgorithm.HS512);
         JWTClaimsSet jwtClaimsSet = new JWTClaimsSet.Builder()
                 .subject(user.getName())

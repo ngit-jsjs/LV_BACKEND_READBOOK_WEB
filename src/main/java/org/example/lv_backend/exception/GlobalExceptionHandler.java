@@ -6,6 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
@@ -37,6 +38,20 @@ public class GlobalExceptionHandler {
                         .result(errorCode.getMessage())
                         .build()
         );
+    }
+
+
+    @ExceptionHandler(value = MethodArgumentNotValidException.class)
+    ResponseEntity<ApiResponse> handlingValidationException(MethodArgumentNotValidException exception) {
+        
+        String enumKey = exception.getFieldError().getDefaultMessage();
+        ErrorCode errorCode = ErrorCode.valueOf(enumKey);
+        
+        ApiResponse apiResponse = new ApiResponse<>();
+        apiResponse.setCode(errorCode.getCode()); 
+        apiResponse.setResult(errorCode.getMessage());
+        
+        return ResponseEntity.status(errorCode.getStatusCode()).body(apiResponse);
     }
 
 }

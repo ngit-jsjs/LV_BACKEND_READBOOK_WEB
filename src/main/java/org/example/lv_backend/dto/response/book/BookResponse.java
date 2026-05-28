@@ -14,6 +14,7 @@ import java.util.Set;
 @NoArgsConstructor
 @Builder
 public class BookResponse {
+    private Long id;
     private String title;
     private String author;
     private String coverImageUrl;
@@ -24,7 +25,9 @@ public class BookResponse {
     private String publisher;
     private Long year;
     private Set<String> categories;
+    private String uploaderName;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private Long userId;
 }
 

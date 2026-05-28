@@ -43,9 +43,9 @@ public class Book {
     private String description;
 
     @Enumerated(EnumType.STRING)
-    private BookStatus status;
+    private BookStatus status = BookStatus.DRAFT;
 
-    private Long totalChapters;
+//    private Long totalChapters;
 
 //    private Long viewCount;
 //

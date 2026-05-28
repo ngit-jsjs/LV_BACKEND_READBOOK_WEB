@@ -7,19 +7,25 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
-
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
 @Builder
 public class UserCreationRequest {
-//    @Email
+    @NotBlank(message = "EMAIL_BLANK")
+    @Email(message = "EMAIL_INVALID_FORMAT")
     private String email;
-//    @Size(min=6, message = "USERNAME_INVALID")
+    
+    @NotBlank(message = "USERNAME_BLANK")
+    @Size(min = 6, max = 50, message = "USERNAME_INVALID")
     private String name;
 
-//    @Size(min=6, message = "Mật khẩu không được ít hơn ")
+    @NotBlank(message = "PASSWORD_BLANK")
+    @Size(min = 6, message = "PASSWORD_INVALID")
     private String password;
 
 }

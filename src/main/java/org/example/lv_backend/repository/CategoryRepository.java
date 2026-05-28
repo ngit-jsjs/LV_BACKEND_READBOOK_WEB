@@ -1,7 +1,9 @@
-package org.example.lv_backend.service;
+package org.example.lv_backend.repository;
 
 import org.example.lv_backend.entity.Category;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
+@Repository
 public interface CategoryRepository extends JpaRepository<Category, Long> {
 }

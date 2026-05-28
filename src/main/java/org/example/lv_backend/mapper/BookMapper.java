@@ -7,6 +7,7 @@ import org.example.lv_backend.entity.Book;
 import org.example.lv_backend.entity.BookList;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.mapstruct.MappingTarget;
 import org.springframework.data.domain.Page;
 
 import java.util.List;
@@ -14,13 +15,14 @@ import java.util.List;
 @Mapper(componentModel = "spring")
 public interface BookMapper {
 
-
+    @Mapping(target = "userId", source = "user.id")
+    @Mapping(source = "user.name", target = "uploaderName")
+    @Mapping(target = "categories", ignore = true)
     BookResponse toBookResponse(Book book);
 
     @Mapping(target = "categories", ignore = true)
     Book toBook(BookCreationRequest request);
+
     @Mapping(target = "categories", ignore = true)
-
-    BookResponse updateBook(Book book, BookCreationRequest request);
+    void updateBook(@MappingTarget Book book, BookCreationRequest request);
 }
-
