@@ -2,6 +2,8 @@ package org.example.lv_backend.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -21,14 +23,20 @@ public class Chapter {
         @GeneratedValue(strategy = GenerationType.IDENTITY)
         private Long id;
 
-        private Long chapterNumber;
+        private Integer chapterNumber;
 
         private String title;
 
-        @Lob
-        @Basic(fetch = FetchType.LAZY)
-        @Column(columnDefinition = "TEXT")
-        private String content;
+        private Integer sectionIndex;
+
+        private String fragmentId;
+
+        private String nextAnchor;
+
+//        @Lob
+//        @Basic(fetch = FetchType.LAZY)
+//        @Column(columnDefinition = "TEXT")
+//        private String content;
 
         private Boolean isFree;
 
@@ -38,15 +46,17 @@ public class Chapter {
 
 
 
+        @CreationTimestamp
         private LocalDateTime createdAt;
 
+        @UpdateTimestamp
         private LocalDateTime updatedAt;
 
         @ManyToOne(fetch = FetchType.LAZY)
         @JoinColumn(name = "book_id")
         private Book book;
 
-        @OneToMany(mappedBy = "chapter")
+        @OneToMany(mappedBy = "chapter", cascade = CascadeType.ALL, orphanRemoval = true)
         private List<ChapterUnlock> chapterUnlocks = new ArrayList<>();
 
 

@@ -36,6 +36,8 @@ public class Book {
 
     private Long year;
 
+    private String storagePath;
+
     @Column(unique = true)
     private String slug;
 
@@ -45,11 +47,13 @@ public class Book {
     @Enumerated(EnumType.STRING)
     private BookStatus status = BookStatus.DRAFT;
 
+
+
 //    private Long totalChapters;
 
 //    private Long viewCount;
 //
-//    private BigDecimal averageRating;
+    private BigDecimal averageRating;
     @CreationTimestamp
     private LocalDateTime createdAt;
     @UpdateTimestamp
@@ -58,6 +62,7 @@ public class Book {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
+    //uploader
 
     @OneToMany(mappedBy = "book", cascade = CascadeType.ALL)
     private List<Chapter> chapters = new ArrayList<>();

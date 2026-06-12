@@ -15,12 +15,16 @@ import org.example.lv_backend.dto.request.auth.LogoutRequest;
 import org.example.lv_backend.dto.response.auth.AuthenticationResponse;
 import org.example.lv_backend.dto.response.auth.IntrospectResponse;
 import org.example.lv_backend.entity.InvalidatedToken;
+import org.example.lv_backend.entity.Role;
+import org.example.lv_backend.entity.RoleName;
 import org.example.lv_backend.entity.User;
 import org.example.lv_backend.exception.AppException;
 import org.example.lv_backend.exception.ErrorCode;
 import org.example.lv_backend.repository.InvalidatedTokenRepository;
+import org.example.lv_backend.repository.RoleRepository;
 import org.example.lv_backend.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
@@ -38,6 +42,7 @@ public class AuthenticationService {
     private final InvalidatedTokenRepository invalidatedTokenRepository;
     private final UserRepository userRepository;
     private final WebConfig webConfig;
+    private final RoleRepository roleRepository;
 
     @NonFinal
     @Value("${jwt.secretKey}")

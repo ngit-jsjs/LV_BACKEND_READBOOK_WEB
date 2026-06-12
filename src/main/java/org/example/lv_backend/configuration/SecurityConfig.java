@@ -19,7 +19,7 @@ import org.springframework.security.web.SecurityFilterChain;
 public class SecurityConfig {
 
     private final String[] POST_PUBLIC_ENDPOINTS = {"/user","/auth/login","/auth/introspect","/auth/logout","/user/create"};
-    private final String[] GET_PUBLIC_ENDPOINTS = {"/user/search", "/uploads/**","/books/search","/chapters/**"};
+    private final String[] GET_PUBLIC_ENDPOINTS = {"/user/search", "/uploads/**","/books/search","/books/*","/chapters/**", "/categories", "/categories/**"};
 
 
     @Autowired

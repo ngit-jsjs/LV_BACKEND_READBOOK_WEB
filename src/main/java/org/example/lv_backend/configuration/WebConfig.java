@@ -10,7 +10,6 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
-    //bean ở đây để không phải khởi tạo mỗi lần ở service
     @Bean
     public PasswordEncoder passwordEncoder(){
         return new BCryptPasswordEncoder(10);
@@ -18,7 +17,6 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        // Map requests to /uploads/** to the local uploads directory
         registry.addResourceHandler("/uploads/**")
                 .addResourceLocations("file:uploads/");
     }

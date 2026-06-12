@@ -44,6 +44,13 @@ dependencies {
     annotationProcessor("org.mapstruct:mapstruct-processor:1.5.5.Final")
     implementation("org.springframework.boot:spring-boot-starter-validation")
 
+    // Source: https://mvnrepository.com/artifact/org.jsoup/jsoup
+    implementation("org.jsoup:jsoup:1.22.2")
+    // Source: https://mvnrepository.com/artifact/com.positiondev.epublib/epublib-core
+    implementation("com.positiondev.epublib:epublib-core:3.1") {
+        exclude(group = "org.slf4j", module = "slf4j-simple")
+    }
+
 }
 
 tasks.withType<Test> {

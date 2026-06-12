@@ -15,12 +15,14 @@ import java.time.LocalDateTime;
 public class ChapterResponse {
     private Long id;
     private Long bookId;
-    private Long chapterNumber;
+    private Integer chapterNumber;
+    Integer sectionIndex;
     private String title;
     private String content;
     private Boolean isFree;
     private Boolean isPublished;
     private BigDecimal price;
+    private Boolean isLocked;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

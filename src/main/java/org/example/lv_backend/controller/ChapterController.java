@@ -5,12 +5,16 @@ import lombok.RequiredArgsConstructor;
 import org.example.lv_backend.dto.request.chapter.ChapterCreationRequest;
 import org.example.lv_backend.dto.request.chapter.ChapterUpdateRequest;
 import org.example.lv_backend.dto.response.ApiResponse;
+import org.example.lv_backend.dto.response.chapter.ChapterListResponse;
 import org.example.lv_backend.dto.response.chapter.ChapterResponse;
 import org.example.lv_backend.service.ChapterService;
+import org.example.lv_backend.service.ChapterUnlockService;
+//import org.example.lv_backend.service.EpubImportService;
+import org.springframework.data.domain.Page;
+import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/chapters")
@@ -18,19 +22,18 @@ import java.util.List;
 public class ChapterController {
 
     private final ChapterService chapterService;
+    private final ChapterUnlockService chapterUnlockService;
+//    private final EpubImportService epubImportService;
 
-    @PostMapping
-    @PreAuthorize("hasAuthority('AUTHOR') or hasAuthority('ADMIN')")
-    public ApiResponse<ChapterResponse> createChapter(@RequestBody @Valid ChapterCreationRequest request) {
-        return ApiResponse.<ChapterResponse>builder()
-                .result(chapterService.createChapter(request))
-                .build();
-    }
+
 
     @GetMapping("/book/{bookId}")
-    public ApiResponse<List<ChapterResponse>> getChaptersByBookId(@PathVariable Long bookId) {
-        return ApiResponse.<List<ChapterResponse>>builder()
-                .result(chapterService.getChaptersByBookId(bookId))
+    public ApiResponse<Page<ChapterListResponse>> getChaptersByBookId(
+            @PathVariable Long bookId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        return ApiResponse.<Page<ChapterListResponse>>builder()
+                .result(chapterService.getChaptersByBookId(bookId, page, size))
                 .build();
     }
 
@@ -42,7 +45,7 @@ public class ChapterController {
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasAuthority('AUTHOR') or hasAuthority('ADMIN')")
+    @PreAuthorize("hasAnyAuthority('SCOPE_ADMIN')")
     public ApiResponse<ChapterResponse> updateChapter(@PathVariable Long id, @RequestBody @Valid ChapterUpdateRequest request) {
         return ApiResponse.<ChapterResponse>builder()
                 .result(chapterService.updateChapter(id, request))
@@ -50,11 +53,21 @@ public class ChapterController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAuthority('AUTHOR') or hasAuthority('ADMIN')")
+    @PreAuthorize("hasAnyAuthority('SCOPE_ADMIN')")
     public ApiResponse<String> deleteChapter(@PathVariable Long id) {
         chapterService.deleteChapter(id);
         return ApiResponse.<String>builder()
                 .result("Chapter has been deleted")
                 .build();
     }
+
+    @PostMapping("/{id}/unlock")
+    public ApiResponse<String> unlockChapter(@PathVariable Long id) {
+        chapterUnlockService.unlockChapter(id);
+        return ApiResponse.<String>builder()
+                .result("Chapter has been unlocked successfully")
+                .build();
+    }
+
+
 }

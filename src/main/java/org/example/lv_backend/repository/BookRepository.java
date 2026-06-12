@@ -20,18 +20,17 @@ public interface BookRepository extends JpaRepository<Book,Long> {
 
     Page<Book> findByUserName(String name, Pageable pageable);
 
+    @Query("SELECT b FROM Book b WHERE b.user.name = :name AND (LOWER(b.title) LIKE LOWER(CONCAT('%', :keyword, '%')) OR LOWER(b.author) LIKE LOWER(CONCAT('%', :keyword, '%')))")
+    Page<Book> findByUserNameAndKeyword(@Param("name") String name, @Param("keyword") String keyword, Pageable pageable);
+
     Boolean existsByTitle (String title);
 
-    Page<Book> findByStatusAndTitleContainingIgnoreCaseOrStatusAndAuthorContainingIgnoreCase(
-            BookStatus status1, 
-            String titleKeyword, 
-            BookStatus status2, 
-            String authorKeyword, 
-            Pageable pageable
-    );
-    boolean existsByUserName(String author);
+    @Query("SELECT b FROM Book b WHERE b.status = :status AND (LOWER(b.title) LIKE LOWER(CONCAT('%', :keyword, '%')) OR LOWER(b.author) LIKE LOWER(CONCAT('%', :keyword, '%')))")
+    Page<Book> findByStatusAndKeyword(@Param("status") BookStatus status, @Param("keyword") String keyword, Pageable pageable);
 
     boolean existsByTitleAndIdNot(String title, Long id);
 
-    Page<Book> findByUserIdAndStatus(Long id, BookStatus status, Pageable pageable);
+
+    Page<Book> findByStatus(BookStatus bookStatus, Pageable pageable);
+    Page<Book> findByBookLists_Id(Long bookListId, Pageable pageable);
 }

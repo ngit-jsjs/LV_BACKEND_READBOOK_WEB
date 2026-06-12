@@ -14,9 +14,6 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ChapterCreationRequest {
-    @NotNull(message = "BOOK_ID_NULL")
-    private Long bookId;
-
     @NotNull(message = "CHAPTER_NUMBER_NULL")
     private Long chapterNumber;
 
@@ -24,10 +21,10 @@ public class ChapterCreationRequest {
     private String title;
 
     private String content;
-    
+
     private Boolean isFree = false;
-    
+
     private Boolean isPublished = false;
-    
+
     private BigDecimal price = BigDecimal.ZERO;
 }

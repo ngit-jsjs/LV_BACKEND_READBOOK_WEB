@@ -34,7 +34,23 @@ public enum ErrorCode {
 
     INVALID_CHAPTER_PRICE(1026, "Gía tiền không hợp lệ",HttpStatus.BAD_REQUEST),
 
-
+    CHAPTER_LOCKED(1033, "Chương này cần phải mua để đọc", HttpStatus.FORBIDDEN),
+    NOT_ENOUGH_COIN(1034, "Bạn không đủ xu để mở khóa chương này", HttpStatus.BAD_REQUEST),
+    CHAPTER_ALREADY_UNLOCKED(1035, "Chương này đã được mở khóa", HttpStatus.BAD_REQUEST),
+    CHAPTER_ALREADY_FREE(1036, "Chương này hoàn toàn miễn phí", HttpStatus.BAD_REQUEST),
+    DESCRIPTION_BLANK(1037,"Mô tả không được để trống",HttpStatus.BAD_REQUEST),
+    AUTHOR_BLANK(1038,"Tác giả không được để trống",HttpStatus.BAD_REQUEST),
+    INVALID_PRICE(1039,"Giá không hợp lệ",HttpStatus.BAD_REQUEST),
+    CATEGORY_EXISTED(1040, "Thể loại này đã tồn tại", HttpStatus.BAD_REQUEST),
+    CATEGORY_NOT_EXISTED(1041, "Thể loại không tồn tại", HttpStatus.NOT_FOUND),
+    CATEGORY_NAME_BLANK(1042, "Tên thể loại không được để trống", HttpStatus.BAD_REQUEST),
+    BOOKLIST_NOT_EXISTED(1050, "Danh sách theo dõi không tồn tại", HttpStatus.NOT_FOUND),
+    BOOKLIST_NAME_BLANK(1051, "Tên danh sách theo dõi không được để trống", HttpStatus.BAD_REQUEST),
+    UNAUTHORIZED_BOOKLIST(1052, "Bạn không có quyền chỉnh sửa danh sách theo dõi này", HttpStatus.FORBIDDEN),
+    BOOKLIST_EXISTED(1053, "Danh sách theo dõi này đã tồn tại", HttpStatus.BAD_REQUEST),
+    READING_HISTORY_NOT_EXISTED(1060, "Lịch sử đọc không tồn tại", HttpStatus.NOT_FOUND),
+    INVALID_EPUB_FILE(1070, "File EPUB không hợp lệ hoặc không chứa chương nào hợp lệ", HttpStatus.BAD_REQUEST),
+    INVALID_IMAGE_FILE(1071, "File ảnh bìa không hợp lệ (chỉ chấp nhận định dạng png, jpg, jpeg, webp)", HttpStatus.BAD_REQUEST)
     ;
 
 

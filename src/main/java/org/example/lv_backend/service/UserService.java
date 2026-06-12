@@ -1,6 +1,7 @@
 package org.example.lv_backend.service;
 
 import lombok.RequiredArgsConstructor;
+import org.example.lv_backend.configuration.SecurityUtil;
 import org.example.lv_backend.configuration.WebConfig;
 import org.example.lv_backend.dto.request.user.UserCreationRequest;
 import org.example.lv_backend.dto.request.user.UserUpdateRequest;
@@ -36,8 +37,10 @@ public class UserService {
     private final RoleRepository roleRepository;
     private final WebConfig webConfig;
     private final AuthenticationService authenticationService;
-    private final FileStorageService fileStorageService;
-
+    private final ImageStorageService imageStorageService;
+    private final SecurityUtil securityUtil;
+// bổ sung xác thực email, quen mat khau, thong tin hoa don gui email bat ky tranh fake mail voi spam
+//them cot xac thuc false, xac thuc roi thi true, them trang nhap ma otp
     private UserResponse mapToUserResponse(User user) {
         UserResponse response = userMapper.toUserResponse(user);
         if (user.getRoles() != null) {
@@ -55,12 +58,7 @@ public class UserService {
 
     public UserResponse createUser (UserCreationRequest request){
 
-        var context = SecurityContextHolder.getContext();
-        if (context.getAuthentication() != null
-                && context.getAuthentication().isAuthenticated()
-                && !(context.getAuthentication() instanceof AnonymousAuthenticationToken)) {
-            throw new AppException(ErrorCode.ALREADY_AUTHENTICATED);
-        }
+
 
 
         if(userRepository.existsByName(request.getName()))
@@ -109,29 +107,6 @@ public class UserService {
     }
 
 
-    public AuthenticationResponse upgradeToAuthor() {
-        var context = SecurityContextHolder.getContext();
-        String name = context.getAuthentication().getName();
-
-        User user = userRepository.findByName(name).orElseThrow(
-                () -> new AppException(ErrorCode.USER_NOT_EXISTED)
-        );
-
-        Role authorRole = roleRepository.findByRoleName(RoleName.AUTHOR).orElseThrow(
-                () -> new AppException(ErrorCode.ROLE_NOT_EXISTED)
-        );
-
-        user.getRoles().add(authorRole);
-        userRepository.save(user);
-
-        String newToken = authenticationService.generateToken(user);
-
-        return AuthenticationResponse.builder()
-                .token(newToken)
-                .authentication(true)
-                .build();
-    }
-
 
     public UserResponse updateUser(Long id, UserUpdateRequest request){
         User user=userRepository.findById(id).
@@ -156,7 +131,7 @@ public class UserService {
         if (user.getBooks() != null) {
             for (Book book : user.getBooks()) {
                 if (book.getCoverImageUrl() != null) {
-                    fileStorageService.deleteFile(book.getCoverImageUrl());
+                    imageStorageService.deleteFile(book.getCoverImageUrl());
                 }
             }
         }

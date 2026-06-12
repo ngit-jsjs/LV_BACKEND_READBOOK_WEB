@@ -5,6 +5,7 @@ import org.example.lv_backend.dto.response.book.BookListResponse;
 import org.example.lv_backend.dto.response.book.BookResponse;
 import org.example.lv_backend.entity.Book;
 import org.example.lv_backend.entity.BookList;
+import org.mapstruct.AfterMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
@@ -25,4 +26,13 @@ public interface BookMapper {
 
     @Mapping(target = "categories", ignore = true)
     void updateBook(@MappingTarget Book book, BookCreationRequest request);
+
+    @AfterMapping
+    default void setTotalChapters(@MappingTarget BookResponse response, Book book) {
+        if (book.getChapters() != null) {
+            response.setTotalChapters(book.getChapters().size());
+        } else {
+            response.setTotalChapters(0);
+        }
+    }
 }

@@ -1,5 +1,6 @@
 package org.example.lv_backend.service;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.example.lv_backend.configuration.SecurityUtil;
 import org.example.lv_backend.dto.request.book.BookCreationRequest;
@@ -11,10 +12,11 @@ import org.example.lv_backend.mapper.BookMapper;
 import org.example.lv_backend.repository.BookRepository;
 import org.example.lv_backend.repository.CategoryRepository;
 import org.example.lv_backend.repository.UserRepository;
+import org.example.lv_backend.repository.ChapterRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -30,8 +32,11 @@ public class BookService {
     private final BookRepository bookRepository;
     private final CategoryRepository categoryRepository;
     private final UserRepository userRepository;
-    private final FileStorageService fileStorageService;
+    private final ImageStorageService imageStorageService;
     private final SecurityUtil securityUtil;
+    private final EpubStorageService epubStorageService;
+    private final EpubParserService epubParserService;
+    private final ChapterRepository chapterRepository;
 
     private BookResponse mapToBookResponse(Book book) {
         BookResponse response = bookMapper.toBookResponse(book);
@@ -47,12 +52,33 @@ public class BookService {
 
 
 
-    public Page<BookResponse> getMyBook(int page, int size){
-        var context= SecurityContextHolder.getContext();
-        String name=context.getAuthentication().getName();
-        Pageable pageable = PageRequest.of(page, size);
+    private boolean isUploader(Book book) {
+        if (securityUtil.isAdmin()) {
+            return true;
+        }
+        String currentUsername = securityUtil.getCurrentUsername();
+        if (currentUsername == null) {
+            return false;
+        }
+        return book.getUser() != null && currentUsername.equals(book.getUser().getName());
+    }
 
-        Page<Book> bookList = bookRepository.findByUserName(name,pageable);
+    private void verifyUploader(Book book) {
+        if (!isUploader(book)) {
+            throw new AppException(ErrorCode.UNAUTHORIZED_BOOK);
+        }
+    }
+
+    public Page<BookResponse> getMyUploadBook(String keyword, int page, int size){
+        String name = securityUtil.getCurrentUsername();
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "id"));
+
+        Page<Book> bookList;
+        if (keyword != null && !keyword.isBlank()) {
+            bookList = bookRepository.findByUserNameAndKeyword(name, keyword.trim(), pageable);
+        } else {
+            bookList = bookRepository.findByUserName(name, pageable);
+        }
 
         Page<BookResponse> response = bookList.map(this::mapToBookResponse);
         return response;
@@ -60,37 +86,23 @@ public class BookService {
 
 
     public Page<BookResponse> searchBook (String keyword, int page, int size){
-        Pageable pageable = PageRequest.of(page, size);
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "id"));
+        String cleanKeyword = keyword != null ? keyword.trim() : "";
 
-        Page<Book> books =
-                bookRepository
-                        .findByStatusAndTitleContainingIgnoreCaseOrStatusAndAuthorContainingIgnoreCase(
-                                BookStatus.PUBLISHED,
-                                keyword,
-                                BookStatus.PUBLISHED,
-                                keyword,
-                                pageable
-                        );
-
+        Page<Book> books = bookRepository.findByStatusAndKeyword(
+                BookStatus.PUBLISHED,
+                cleanKeyword,
+                pageable
+        );
 
         return books.map(this::mapToBookResponse);
     }
 
-
+    @Transactional
     public BookResponse createBook (BookCreationRequest request, MultipartFile file){
-
-        //chac book nen them 1 bang publisher
-
-        String imageUrl = fileStorageService.storeFile(file);
-        if (imageUrl != null) {
-            request.setCoverImageUrl(imageUrl);
-        }
-
         var title = request.getTitle();
-
         if(bookRepository.existsByTitle(title))
             throw new AppException(ErrorCode.NAMEBOOK_EXISTED);
-
 
         User user = userRepository.findByName(securityUtil.getCurrentUsername())
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
@@ -98,59 +110,81 @@ public class BookService {
         Set<Category> categories = new HashSet<>();
         if (request.getCategoryIds() != null && !request.getCategoryIds().isEmpty()) {
             List<Category> categoryList = categoryRepository.findAllById(request.getCategoryIds());
+            if (categoryList.size() != request.getCategoryIds().size()) {
+                throw new AppException(ErrorCode.CATEGORY_NOT_EXISTED);
+            }
             categories.addAll(categoryList);
         }
 
-        Book book = bookMapper.toBook(request);
+        String imageUrl = null;
 
-        book.setCategories(categories);
-        book.setUser(user);
+        try {
+            if (file != null && !file.isEmpty()) {
+                imageUrl = imageStorageService.storeFile(file);
+                request.setCoverImageUrl(imageUrl);
+            }
 
-        BookResponse response = mapToBookResponse(bookRepository.save(book));
+            Book book = bookMapper.toBook(request);
+            book.setCategories(categories);
+            book.setUser(user);
 
-        return response;
+            book = bookRepository.save(book);
+            bookRepository.flush();
 
+            return mapToBookResponse(book);
+
+        } catch (Exception e) {
+            if (imageUrl != null) {
+                imageStorageService.deleteFile(imageUrl);
+            }
+            throw e;
+        }
     }
 
 
+    @Transactional
     public BookResponse updateBook(Long id, BookCreationRequest request, MultipartFile file){
         Book book=bookRepository.findById(id).
                 orElseThrow(()->new AppException(ErrorCode.BOOK_NOT_EXISTED));
 
-        String imageUrl = fileStorageService.storeFile(file);
+        verifyUploader(book);
 
-        if (imageUrl != null) {
-            fileStorageService.deleteFile(book.getCoverImageUrl());
-            request.setCoverImageUrl(imageUrl);
-        } else {
-            request.setCoverImageUrl(book.getCoverImageUrl());
-        }
-
-        var title = request.getTitle();                          
-
+        var title = request.getTitle();
         if(bookRepository.existsByTitleAndIdNot(title, id))
             throw new AppException(ErrorCode.NAMEBOOK_EXISTED);
-
-
-
-        if (!book.getUser().getName().equals(securityUtil.getCurrentUsername()) && !securityUtil.isAdmin()) {
-            throw new AppException(ErrorCode.UNAUTHORIZED_BOOK);
-        }
-
-        bookMapper.updateBook(book, request);
-
 
         Set<Category> categories = new HashSet<>();
         if (request.getCategoryIds() != null && !request.getCategoryIds().isEmpty()) {
             List<Category> categoryList = categoryRepository.findAllById(request.getCategoryIds());
+            if (categoryList.size() != request.getCategoryIds().size()) {
+                throw new AppException(ErrorCode.CATEGORY_NOT_EXISTED);
+            }
             categories.addAll(categoryList);
         }
 
+        String newImageUrl = null;
+        String oldImageUrl = book.getCoverImageUrl();
+        if (file != null && !file.isEmpty()) {
+            newImageUrl = imageStorageService.storeFile(file);
+            request.setCoverImageUrl(newImageUrl);
+        } else {
+            request.setCoverImageUrl(oldImageUrl);
+        }
 
-        book.setCategories(categories);
-
-        return mapToBookResponse(bookRepository.save(book));
-
+        try {
+            bookMapper.updateBook(book, request);
+            book.setCategories(categories);
+            BookResponse response = mapToBookResponse(bookRepository.save(book));
+            if (newImageUrl != null && oldImageUrl != null) {
+                imageStorageService.deleteFile(oldImageUrl);
+            }
+            return response;
+        } catch (Exception e) {
+            if (newImageUrl != null) {
+                imageStorageService.deleteFile(newImageUrl);
+            }
+            throw e;
+        }
     }
 
 
@@ -160,49 +194,88 @@ public class BookService {
         Book book = bookRepository.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.BOOK_NOT_EXISTED));
 
-        boolean isOwner = book.getUser()
-                .getName()
-                .equals(securityUtil.getCurrentUsername());
-
-        if (book.getStatus() == BookStatus.DRAFT
-                && !isOwner
-                && !securityUtil.isAdmin()) {
+        if (book.getStatus() == BookStatus.DRAFT && !isUploader(book)) {
             throw new AppException(ErrorCode.BOOK_NOT_EXISTED);
         }
-
 
         return mapToBookResponse(book);
     }
 
+    @Transactional
     public void deleteBook(Long id){
         Book book = bookRepository.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.BOOK_NOT_EXISTED));
 
-        if (!book.getUser().getName().equals(securityUtil.getCurrentUsername()) && !securityUtil.isAdmin()) {
-            throw new AppException(ErrorCode.UNAUTHORIZED_BOOK);
+        verifyUploader(book);
+
+        String coverImageUrl = book.getCoverImageUrl();
+        String epubStoragePath = book.getStoragePath();
+
+        bookRepository.delete(book);
+        bookRepository.flush(); 
+
+        if (coverImageUrl != null) {
+            imageStorageService.deleteFile(coverImageUrl);
         }
 
-        fileStorageService.deleteFile(book.getCoverImageUrl());
-
-        bookRepository.deleteById(id);
+        if (epubStoragePath != null) {
+            epubStorageService.deleteFile(epubStoragePath);
+        }
     }
 
 
-    public Page<BookResponse> getPublishedBooks(
-            Long id,
+
+    public Page<BookResponse> getAllPublishedBooks(
             int page,
             int size
-    ){
-        Pageable pageable = PageRequest.of(page, size);
+    )
+    {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "id"));
 
         return bookRepository
-                .findByUserIdAndStatus(
-                        id,
+                .findByStatus(
                         BookStatus.PUBLISHED,
                         pageable
                 )
                 .map(this::mapToBookResponse);
     }
 
+    @Transactional
+    public BookResponse importEpub(Long bookId, MultipartFile file) {
+        if (file == null || file.isEmpty()) {
+            throw new RuntimeException("Không có file Epub");
+        }
+
+        Book book = bookRepository.findById(bookId)
+                .orElseThrow(() -> new AppException(ErrorCode.BOOK_NOT_EXISTED));
+
+        verifyUploader(book);
+
+        if (book.getChapters() != null && !book.getChapters().isEmpty()) {
+            chapterRepository.deleteAll(book.getChapters());
+            book.getChapters().clear();
+        }
+
+        String storedPath = epubStorageService.storeFile(file);
+        book.setStoragePath(storedPath);
+
+        try {
+            book = bookRepository.save(book);
+            bookRepository.flush();
+
+            epubParserService.parseAndSaveChapters(book);
+
+            return mapToBookResponse(book);
+
+        } catch (Exception e) {
+            epubStorageService.deleteFile(storedPath);
+            throw new RuntimeException("Import EPUB thất bại", e);
+        }
+    }
+
+    private String stripExtension(String filename) {
+        int dot = filename.lastIndexOf('.');
+        return dot > 0 ? filename.substring(0, dot) : filename;
+    }
 
 }

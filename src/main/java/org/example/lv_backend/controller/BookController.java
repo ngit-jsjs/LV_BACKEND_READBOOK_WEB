@@ -21,7 +21,7 @@ public class BookController {
 
     private final BookService bookService;
 
-    @PreAuthorize("hasAnyAuthority('SCOPE_AUTHOR')")
+    @PreAuthorize("hasAuthority('SCOPE_ADMIN')")
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ApiResponse<BookResponse> createBook(
             @RequestPart(value = "file", required = false) MultipartFile file,
@@ -31,14 +31,35 @@ public class BookController {
                 .build();
     }
 
-    @PreAuthorize("hasAnyAuthority('SCOPE_AUTHOR')")
-    @GetMapping("/my-books")
-    public ApiResponse<Page<BookResponse>> getMyBook(
+    @PreAuthorize("hasAuthority('SCOPE_ADMIN')")
+    @PostMapping(value = "/{bookId}/import-epub", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ApiResponse<BookResponse> importEpub(
+            @PathVariable Long bookId,
+            @RequestParam("file") MultipartFile file) {
+        return ApiResponse.<BookResponse>builder()
+                .result(bookService.importEpub(bookId, file))
+                .build();
+    }
+    
+    @PreAuthorize("hasAnyAuthority('SCOPE_ADMIN')")
+    @GetMapping("/my-upload-books")
+    public ApiResponse<Page<BookResponse>> getMyUploadBook(
+            @RequestParam(required = false) String keyword,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
 
         return ApiResponse.<Page<BookResponse>>builder()
-                .result(bookService.getMyBook(page, size))
+                .result(bookService.getMyUploadBook(keyword, page, size))
+                .build();
+    }
+
+    @GetMapping
+    public ApiResponse<Page<BookResponse>> getAllBooks(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+
+        return ApiResponse.<Page<BookResponse>>builder()
+                .result(bookService.getAllPublishedBooks(page, size))
                 .build();
     }
 
@@ -60,7 +81,7 @@ public class BookController {
                 .build();
     }
 
-    @PreAuthorize("hasAnyAuthority('SCOPE_AUTHOR', 'SCOPE_ADMIN')")
+    @PreAuthorize("hasAuthority('SCOPE_ADMIN')")
     @PutMapping(value = "/{bookId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ApiResponse<BookResponse> updateBook(@PathVariable("bookId") Long bookId,
                                                 @RequestPart(value = "file", required = false) MultipartFile file,
@@ -71,7 +92,7 @@ public class BookController {
                 .build();
     }
 
-    @PreAuthorize("hasAnyAuthority('SCOPE_AUTHOR', 'SCOPE_ADMIN')")
+    @PreAuthorize("hasAuthority('SCOPE_ADMIN')")
     @DeleteMapping("/{bookId}")
     public ApiResponse<String> deleteBook(@PathVariable("bookId") Long bookId) {
         bookService.deleteBook(bookId);
@@ -80,19 +101,4 @@ public class BookController {
                 .build();
     }
 
-    @GetMapping("/authors/{id}")
-    public ApiResponse<Page<BookResponse>> getPublishedBooks(
-            @PathVariable Long id,
-            @RequestParam(defaultValue = "1") int page,
-            @RequestParam(defaultValue = "10") int size
-    ) {
-
-        return ApiResponse.<Page<BookResponse>>builder()
-                .result(bookService.getPublishedBooks(
-                        id,
-                        page,
-                        size
-                ))
-                .build();
-    }
 }

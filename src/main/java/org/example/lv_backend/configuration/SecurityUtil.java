@@ -17,10 +17,6 @@ public class SecurityUtil {
         return hasAuthority("SCOPE_ADMIN");
     }
 
-    public boolean isAuthor() {
-        return hasAuthority("SCOPE_AUTHOR");
-    }
-
     public String getCurrentUsername() {
         return SecurityContextHolder.getContext()
                 .getAuthentication()
