@@ -8,19 +8,23 @@ import com.nimbusds.jwt.SignedJWT;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.NonFinal;
 import lombok.extern.slf4j.Slf4j;
-import org.example.lv_backend.configuration.Configuration;
+import org.example.lv_backend.configuration.WebConfig;
 import org.example.lv_backend.dto.request.auth.AuthenticationRequest;
 import org.example.lv_backend.dto.request.auth.IntrospectRequest;
 import org.example.lv_backend.dto.request.auth.LogoutRequest;
 import org.example.lv_backend.dto.response.auth.AuthenticationResponse;
 import org.example.lv_backend.dto.response.auth.IntrospectResponse;
 import org.example.lv_backend.entity.InvalidatedToken;
+import org.example.lv_backend.entity.Role;
+import org.example.lv_backend.entity.RoleName;
 import org.example.lv_backend.entity.User;
 import org.example.lv_backend.exception.AppException;
 import org.example.lv_backend.exception.ErrorCode;
 import org.example.lv_backend.repository.InvalidatedTokenRepository;
+import org.example.lv_backend.repository.RoleRepository;
 import org.example.lv_backend.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
@@ -37,7 +41,8 @@ import java.util.UUID;
 public class AuthenticationService {
     private final InvalidatedTokenRepository invalidatedTokenRepository;
     private final UserRepository userRepository;
-    private final Configuration configuration;
+    private final WebConfig webConfig;
+    private final RoleRepository roleRepository;
 
     @NonFinal
     @Value("${jwt.secretKey}")
@@ -50,7 +55,7 @@ public class AuthenticationService {
         );
 
 
-        boolean authenticated = configuration.passwordEncoder().matches(authenticationRequest.getPassword(), user.getPassword());
+        boolean authenticated = webConfig.passwordEncoder().matches(authenticationRequest.getPassword(), user.getPassword());
 
         if (!authenticated)
             throw new AppException(ErrorCode.UNAUTHENTICATED);
@@ -79,7 +84,7 @@ public class AuthenticationService {
                 .build();
     }
 
-    private String generateToken(User user) {
+    public String generateToken(User user) {
         JWSHeader header = new JWSHeader(JWSAlgorithm.HS512);
         JWTClaimsSet jwtClaimsSet = new JWTClaimsSet.Builder()
                 .subject(user.getName())

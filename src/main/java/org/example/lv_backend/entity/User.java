@@ -49,7 +49,7 @@ public class User {
     )
     private Set<Role> roles;
 
-    @OneToMany(mappedBy = "user")
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Book> books = new ArrayList<>();
 
     @OneToMany(mappedBy = "user")

@@ -1,9 +1,11 @@
 package org.example.lv_backend.service;
 
 import lombok.RequiredArgsConstructor;
-import org.example.lv_backend.configuration.Configuration;
+import org.example.lv_backend.configuration.SecurityUtil;
+import org.example.lv_backend.configuration.WebConfig;
 import org.example.lv_backend.dto.request.user.UserCreationRequest;
 import org.example.lv_backend.dto.request.user.UserUpdateRequest;
+import org.example.lv_backend.dto.response.auth.AuthenticationResponse;
 import org.example.lv_backend.dto.response.user.SearchingUserResponse;
 import org.example.lv_backend.dto.response.user.UserResponse;
 import org.example.lv_backend.entity.Role;
@@ -11,7 +13,6 @@ import org.example.lv_backend.entity.RoleName;
 import org.example.lv_backend.entity.User;
 import org.example.lv_backend.exception.AppException;
 import org.example.lv_backend.exception.ErrorCode;
-import org.example.lv_backend.mapper.BookMapper;
 import org.example.lv_backend.mapper.UserMapper;
 import org.example.lv_backend.repository.RoleRepository;
 import org.example.lv_backend.repository.UserRepository;
@@ -21,6 +22,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.example.lv_backend.entity.Book;
 
 import java.math.BigDecimal;
 import java.util.HashSet;
@@ -32,19 +34,31 @@ import java.util.stream.Collectors;
 public class UserService {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
-    private final BookMapper bookMapper;
     private final RoleRepository roleRepository;
-    private final Configuration configuration;
+    private final WebConfig webConfig;
+    private final AuthenticationService authenticationService;
+    private final ImageStorageService imageStorageService;
+    private final SecurityUtil securityUtil;
+// bổ sung xác thực email, quen mat khau, thong tin hoa don gui email bat ky tranh fake mail voi spam
+//them cot xac thuc false, xac thuc roi thi true, them trang nhap ma otp
+    private UserResponse mapToUserResponse(User user) {
+        UserResponse response = userMapper.toUserResponse(user);
+        if (user.getRoles() != null) {
+            response.setRoles(
+                    user.getRoles().stream()
+                            .map(Role::getRoleName)
+                            .collect(Collectors.toSet())
+            );
+        } else {
+            response.setRoles(new HashSet<>());
+        }
+        return response;
+    }
 
 
     public UserResponse createUser (UserCreationRequest request){
 
-        var context = SecurityContextHolder.getContext();
-        if (context.getAuthentication() != null
-                && context.getAuthentication().isAuthenticated()
-                && !(context.getAuthentication() instanceof AnonymousAuthenticationToken)) {
-            throw new AppException(ErrorCode.ALREADY_AUTHENTICATED);
-        }
+
 
 
         if(userRepository.existsByName(request.getName()))
@@ -56,7 +70,7 @@ public class UserService {
         User user= userMapper.toUser(request);
 
 
-        user.setPassword( configuration.passwordEncoder().encode(request.getPassword()));
+        user.setPassword( webConfig.passwordEncoder().encode(request.getPassword()));
 
         BigDecimal amount=BigDecimal.valueOf(100);
         user.setAmount(amount);
@@ -69,14 +83,7 @@ public class UserService {
         roles.add(role);
         user.setRoles(roles);
 
-        UserResponse response = userMapper.toUserResponse(userRepository.save(user));
-
-        response.setRoles(
-                user.getRoles()
-                        .stream()
-                        .map(Role::getRoleName)
-                        .collect(Collectors.toSet())
-        );
+        UserResponse response = mapToUserResponse(userRepository.save(user));
 
         return response;
 
@@ -91,14 +98,7 @@ public class UserService {
                 () -> new AppException(ErrorCode.USER_NOT_EXISTED)
         );
 
-        UserResponse response = userMapper.toUserResponse(user);
-
-        // Set roles
-        response.setRoles(
-                user.getRoles().stream()
-                        .map(Role::getRoleName)
-                        .collect(Collectors.toSet())
-        );
+        UserResponse response = mapToUserResponse(user);
 
         response.setAmount(user.getAmount());
 
@@ -107,29 +107,36 @@ public class UserService {
     }
 
 
+
     public UserResponse updateUser(Long id, UserUpdateRequest request){
         User user=userRepository.findById(id).
                 orElseThrow(()->new AppException(ErrorCode.USER_NOT_EXISTED));
         userMapper.updateUser(user, request);
         if(request.getPassword()!=null){
-            user.setPassword(configuration.passwordEncoder().encode(request.getPassword()));
+            user.setPassword(webConfig.passwordEncoder().encode(request.getPassword()));
         }
-        return userMapper.toUserResponse(userRepository.save(user));
+        return mapToUserResponse(userRepository.save(user));
 
     }
 
-//    public UserResponse updateAuthor(Long id, UserUpdateRequest request){
-//        User user=userRepository.findById(id).
-//                orElseThrow(()->new AppException(ErrorCode.USER_NOT_EXISTED));
-//        userMapper.updateUser(user, request);
-//
-//        return userMapper.toUserResponse(userRepository.save(user));
-//
-//    }
+
+
 
 
     public void deleteUser(Long userId){
-        userRepository.deleteById(userId);
+        User user = userRepository.findById(userId).orElseThrow(
+                () -> new AppException(ErrorCode.USER_NOT_EXISTED)
+        );
+
+        if (user.getBooks() != null) {
+            for (Book book : user.getBooks()) {
+                if (book.getCoverImageUrl() != null) {
+                    imageStorageService.deleteFile(book.getCoverImageUrl());
+                }
+            }
+        }
+
+        userRepository.delete(user);
     }
 
 
@@ -147,7 +154,14 @@ public class UserService {
         return users.map(userMapper::toSearchingUserResponse);
     }
 
+    public SearchingUserResponse getUserById(Long userId){
 
+        User user = userRepository.findById(userId)
+                .orElseThrow(() ->
+                        new AppException(ErrorCode.USER_NOT_EXISTED));
+
+        return userMapper.toSearchingUserResponse(user);
+    }
 
 
 

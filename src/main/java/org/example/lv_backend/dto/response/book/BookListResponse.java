@@ -5,7 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
+import java.util.Set;
 
 @Data
 @AllArgsConstructor
@@ -14,5 +14,5 @@ import java.util.List;
 public class BookListResponse {
     private Long id;
     private String name;
-    private List<BookResponse> books;
+    private Set<Long> bookIds;
 }

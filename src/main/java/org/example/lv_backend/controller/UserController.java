@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.example.lv_backend.dto.request.user.UserCreationRequest;
 import org.example.lv_backend.dto.request.user.UserUpdateRequest;
 import org.example.lv_backend.dto.response.ApiResponse;
+import org.example.lv_backend.dto.response.auth.AuthenticationResponse;
 import org.example.lv_backend.dto.response.user.SearchingUserResponse;
 import org.example.lv_backend.dto.response.user.UserResponse;
 import org.example.lv_backend.service.UserService;
@@ -31,8 +32,8 @@ public class UserController {
 
     @PreAuthorize("hasAnyAuthority('SCOPE_ADMIN')")
     @GetMapping("/search")
-    public ApiResponse<Page<SearchingUserResponse>> searchUser(@RequestParam String keyword,
-                                                               @RequestParam(defaultValue = "1") int page,
+    public ApiResponse<Page<SearchingUserResponse>> searchUser(@RequestParam(required = false, defaultValue = "") String keyword,
+                                                               @RequestParam(defaultValue = "0") int page,
                                                                @RequestParam(defaultValue = "10") int size){
 
         ApiResponse<SearchingUserResponse> apiResponse = new ApiResponse<>();
@@ -45,13 +46,14 @@ public class UserController {
                 .build();
     }
 
-    @PreAuthorize("hasAnyAuthority('SCOPE_ADMIN', 'SCOPE_AUTHOR', 'SCOPE_USER')")
+    @PreAuthorize("hasAnyAuthority('SCOPE_ADMIN', 'SCOPE_USER')")
     @GetMapping("/myInfo")
     ApiResponse<UserResponse> getMyInfo(){
         return ApiResponse.<UserResponse>builder()
                 .result(userService.getMyInfo())
                 .build();
     }
+
 
     @PreAuthorize("""
     hasAuthority('SCOPE_ADMIN')
@@ -72,7 +74,15 @@ public class UserController {
     }
 
 
+    @GetMapping("/{userId}")
+    public ApiResponse<SearchingUserResponse> getUserById(
+            @PathVariable Long userId
+    ){
 
+        return ApiResponse.<SearchingUserResponse>builder()
+                .result(userService.getUserById(userId))
+                .build();
+    }
 
 
 }
