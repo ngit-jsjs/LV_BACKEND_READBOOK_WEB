@@ -36,10 +36,8 @@ public class User {
     private BigDecimal amount = BigDecimal.ZERO;
 
 
-//    @CreationTimestamp
-//    private Date createdAt;
-//    @UpdateTimestamp
-//    private Date updatedAt;
+    @Builder.Default
+    private boolean verified = false;
 
     @ManyToMany
     @JoinTable(

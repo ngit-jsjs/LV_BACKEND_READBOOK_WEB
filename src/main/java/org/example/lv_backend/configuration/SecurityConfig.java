@@ -18,7 +18,17 @@ import org.springframework.security.web.SecurityFilterChain;
 @EnableMethodSecurity
 public class SecurityConfig {
 
-    private final String[] POST_PUBLIC_ENDPOINTS = {"/user","/auth/login","/auth/introspect","/auth/logout","/user/create"};
+    private final String[] POST_PUBLIC_ENDPOINTS = {
+            "/user",
+            "/auth/login",
+            "/auth/introspect",
+            "/auth/logout",
+            "/user/create",
+            "/auth/verify-email",
+            "/auth/resend-otp",
+            "/auth/forgot-password",
+            "/auth/reset-password"
+    };
     private final String[] GET_PUBLIC_ENDPOINTS = {"/user/search", "/uploads/**","/books/search","/books/*","/chapters/**", "/categories", "/categories/**"};
 
 

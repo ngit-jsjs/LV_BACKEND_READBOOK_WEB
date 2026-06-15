@@ -50,7 +50,9 @@ public enum ErrorCode {
     BOOKLIST_EXISTED(1053, "Danh sách theo dõi này đã tồn tại", HttpStatus.BAD_REQUEST),
     READING_HISTORY_NOT_EXISTED(1060, "Lịch sử đọc không tồn tại", HttpStatus.NOT_FOUND),
     INVALID_EPUB_FILE(1070, "File EPUB không hợp lệ hoặc không chứa chương nào hợp lệ", HttpStatus.BAD_REQUEST),
-    INVALID_IMAGE_FILE(1071, "File ảnh bìa không hợp lệ (chỉ chấp nhận định dạng png, jpg, jpeg, webp)", HttpStatus.BAD_REQUEST)
+    INVALID_IMAGE_FILE(1071, "File ảnh bìa không hợp lệ (chỉ chấp nhận định dạng png, jpg, jpeg, webp)", HttpStatus.BAD_REQUEST),
+    EMAIL_NOT_VERIFIED(1080, "Email của bạn chưa được xác thực. Vui lòng xác thực trước khi đăng nhập.", HttpStatus.FORBIDDEN),
+    INVALID_OTP(1081, "Mã OTP không chính xác hoặc đã hết hạn", HttpStatus.BAD_REQUEST),
     ;
 
 

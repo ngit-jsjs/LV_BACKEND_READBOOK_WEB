@@ -1,4 +1,4 @@
-package org.example.lv_backend.service;
+package org.example.lv_backend.service.storage;
 
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;

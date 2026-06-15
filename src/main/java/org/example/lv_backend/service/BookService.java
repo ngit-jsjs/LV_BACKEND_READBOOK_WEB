@@ -13,6 +13,8 @@ import org.example.lv_backend.repository.BookRepository;
 import org.example.lv_backend.repository.CategoryRepository;
 import org.example.lv_backend.repository.UserRepository;
 import org.example.lv_backend.repository.ChapterRepository;
+import org.example.lv_backend.service.storage.EpubStorageService;
+import org.example.lv_backend.service.storage.ImageStorageService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
