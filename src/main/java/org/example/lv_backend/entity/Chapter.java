@@ -34,13 +34,11 @@ public class Chapter {
         private String nextAnchor;
 
 //        @Lob
-//        @Basic(fetch = FetchType.LAZY)
 //        @Column(columnDefinition = "TEXT")
 //        private String content;
 
         private Boolean isFree;
 
-        private Boolean isPublished;
 
         private BigDecimal price;
 
@@ -57,6 +55,7 @@ public class Chapter {
         private Book book;
 
         @OneToMany(mappedBy = "chapter", cascade = CascadeType.ALL, orphanRemoval = true)
+        @Builder.Default
         private List<ChapterUnlock> chapterUnlocks = new ArrayList<>();
 
 

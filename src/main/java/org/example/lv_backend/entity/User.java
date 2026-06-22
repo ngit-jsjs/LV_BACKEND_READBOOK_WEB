@@ -48,31 +48,39 @@ public class User {
     private Set<Role> roles;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
     private List<Book> books = new ArrayList<>();
 
     @OneToMany(mappedBy = "user")
+    @Builder.Default
     private List<Rating> ratings = new ArrayList<>();
 
     @OneToMany(mappedBy = "user")
+    @Builder.Default
     private List<Subscription> subscriptions = new ArrayList<>();
 
     @OneToMany(mappedBy = "user")
+    @Builder.Default
     private List<Payment> payments = new ArrayList<>();
 
 
     @OneToMany(mappedBy = "user")
+    @Builder.Default
     private List<BookList> bookLists = new ArrayList<>();
 
     @OneToMany(mappedBy = "user")
+    @Builder.Default
     private List<ChapterUnlock> chapterUnlocks = new ArrayList<>();
 
 
 
     @OneToMany(mappedBy = "user")
+    @Builder.Default
     private List<Recommendation> recommendations = new ArrayList<>();
 
 
 
     @OneToMany(mappedBy = "user")
+    @Builder.Default
     private List<ReadingHistory> readingHistories = new ArrayList<>();
 }

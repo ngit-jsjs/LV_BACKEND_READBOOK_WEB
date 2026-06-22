@@ -2,11 +2,13 @@ package org.example.lv_backend.service;
 
 import lombok.RequiredArgsConstructor;
 import org.example.lv_backend.configuration.SecurityUtil;
+import org.example.lv_backend.dto.request.chapter.ChapterBatchUpdateRequest;
 import org.example.lv_backend.dto.request.chapter.ChapterCreationRequest;
 import org.example.lv_backend.dto.request.chapter.ChapterUpdateRequest;
-import org.example.lv_backend.dto.response.chapter.ChapterListResponse;
 import org.example.lv_backend.dto.response.chapter.ChapterResponse;
+import org.example.lv_backend.dto.response.chapter.ChapterDetailResponse;
 import org.example.lv_backend.entity.Book;
+import org.example.lv_backend.entity.BookStatus;
 import org.example.lv_backend.entity.Chapter;
 import org.example.lv_backend.entity.User;
 import org.example.lv_backend.exception.AppException;
@@ -17,12 +19,14 @@ import org.example.lv_backend.repository.ChapterRepository;
 import org.example.lv_backend.repository.ChapterUnlockRepository;
 import org.example.lv_backend.repository.UserRepository;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -39,77 +43,39 @@ public class ChapterService {
     private final SecurityUtil securityUtil;
     private final EpubParserService epubParserService;
 
-    private boolean isOwner(Book book) {
-        if (securityUtil.isAdmin()) {
-            return true;
-        }
-        String currentUsername = securityUtil.getCurrentUsername();
-        if (currentUsername == null) {
-            return false;
-        }
-        return book.getUser() != null && currentUsername.equals(book.getUser().getName());
-    }
-
-
-
-    private void verifyOwnership(Book book) {
-        if (!isOwner(book)) {
-            throw new AppException(ErrorCode.UNAUTHORIZED_BOOK);
-        }
-    }
-
-
-    private boolean isChapterLocked(Chapter chapter, boolean hasFullAccess, Set<Long> unlockedChapterIds) {
-        if (hasFullAccess || Boolean.TRUE.equals(chapter.getIsFree())) {
-            return false;
-        }
-        return !unlockedChapterIds.contains(chapter.getId());
-    }
-
-
-
-
-
 
 
     @Transactional(readOnly = true)
-    public Page<ChapterListResponse> getChaptersByBookId(Long bookId, int page, int size) {
+    public Page<ChapterResponse> getChaptersByBookId(Long bookId, int page, int size) {
         Book book = bookRepository.findById(bookId)
                 .orElseThrow(() -> new AppException(ErrorCode.BOOK_NOT_EXISTED));
 
-        boolean hasFullAccess = isOwner(book);
-        Pageable pageable = PageRequest.of(page, 1000);
 
-        Page<Chapter> chapters = hasFullAccess
-                ? chapterRepository.findByBookIdOrderByChapterNumberAsc(bookId, pageable)
-                : chapterRepository.findByBookIdAndIsPublishedTrueOrderByChapterNumberAsc(bookId, pageable);
+        if (!securityUtil.isAdmin() && book.getStatus() == BookStatus.UNAVAILABLE) {
+            throw new AppException(ErrorCode.BOOK_NOT_EXISTED);
+        }
+        Pageable pageable = PageRequest.of(page, size);
 
-        Set<Long> unlockedChapterIds = getUnlockedChapterIds(chapters, hasFullAccess);
+        Page<Chapter> chapters = chapterRepository.findByBookIdOrderByChapterNumberAsc(bookId, pageable);
 
-        return chapters.map(chapter -> 
-        {
-            boolean isLocked;
+        Set<Long> unlockedChapterIds = getUnlockedChapterIds(chapters);
 
-            if (hasFullAccess) {
-                isLocked = false;
-            }
-            else if (Boolean.TRUE.equals(chapter.getIsFree())) {
-                isLocked = false;
-            }
-            else if (unlockedChapterIds.contains(chapter.getId())) {
-                isLocked = false;
-            }
-            else {
-                isLocked = true;
-            }
+        List<ChapterResponse> responseList = new ArrayList<>();
 
-            return chapterMapper.toChapterListResponse(chapter, isLocked);
-        });
+        for (Chapter chapter : chapters) {
+            boolean isLocked = !securityUtil.isAdmin()
+                    && !Boolean.TRUE.equals(chapter.getIsFree())
+                    && !unlockedChapterIds.contains(chapter.getId());
+
+            responseList.add(chapterMapper.toChapterResponse(chapter, isLocked));
+        }
+
+        return new PageImpl<>(responseList, pageable, chapters.getTotalElements());
     }
 
 
-    private boolean isChapterLocked(Chapter chapter, boolean hasFullAccess) {
-                if (hasFullAccess || Boolean.TRUE.equals(chapter.getIsFree())) {
+    private boolean isChapterLocked(Chapter chapter) {
+                if (securityUtil.isAdmin() ||chapter.getIsFree()) {
                     return false;
                 }
                 String currentUsername = securityUtil.getCurrentUsername();
@@ -119,7 +85,7 @@ public class ChapterService {
                 User currentUser = userRepository.findByName(currentUsername).orElse(null);
                 if (currentUser != null) {
                     boolean isUnlocked = chapterUnlockRepository.checkIfUnlocked(currentUser.getId(), chapter.getId());
-                    return !isUnlocked; 
+                    return !isUnlocked;
                 } else {
                     return true;
                 }
@@ -128,36 +94,30 @@ public class ChapterService {
 
 
     @Transactional(readOnly = true)
-    public ChapterResponse getChapterById(Long id) {
+    public ChapterDetailResponse getChapterById(Long id) {
         Chapter chapter = chapterRepository.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.CHAPTER_NOT_EXISTED));
 
-        boolean hasFullAccess = isOwner(chapter.getBook());
 
-        if (!hasFullAccess && !Boolean.TRUE.equals(chapter.getIsPublished())) {
-            throw new AppException(ErrorCode.CHAPTER_NOT_EXISTED);
-        }
-
-        boolean isLocked = isChapterLocked(chapter, hasFullAccess);
-
-        ChapterResponse response = chapterMapper.toChapterDetailResponse(chapter, isLocked);
-        if (!isLocked) {
-            try {
-                String content = epubParserService.readChapterContent(
-                        chapter.getBook().getStoragePath(), 
-                        chapter.getSectionIndex(),
-                        chapter.getFragmentId(),
-                        chapter.getNextAnchor()
-                );
-                response.setContent(content);
-                
-            } catch (RuntimeException e) {
-
-                throw new RuntimeException("Không đọc được nội dung chapter từ EPUB", e);
+        if (!securityUtil.isAdmin()) {
+            if (chapter.getBook().getStatus() == BookStatus.UNAVAILABLE) {
+                {
+                    throw new AppException(ErrorCode.CHAPTER_NOT_EXISTED);
+                }
             }
         }
-        else {
-            response.setContent("");
+
+        boolean isLocked = isChapterLocked(chapter);
+
+        ChapterDetailResponse response = chapterMapper.toChapterDetailResponse(chapter, isLocked);
+        if (!isLocked) {
+            String content = epubParserService.readChapterContent(
+                    chapter.getBook().getStoragePath(),
+                    chapter.getSectionIndex(),
+                    chapter.getFragmentId(),
+                    chapter.getNextAnchor()
+            );
+            response.setContent(content);
         }
         return response;
 
@@ -166,8 +126,8 @@ public class ChapterService {
 
 
 
-    private Set<Long> getUnlockedChapterIds(Page<Chapter> chapters, boolean hasFullAccess) {
-        if (hasFullAccess) {
+    private Set<Long> getUnlockedChapterIds(Page<Chapter> chapters) {
+        if (securityUtil.isAdmin()) {
             return Collections.emptySet();
         }
         String currentUsername = securityUtil.getCurrentUsername();
@@ -187,7 +147,7 @@ public class ChapterService {
     }
 
 
-   
+
 
 //
     @Transactional
@@ -195,7 +155,6 @@ public class ChapterService {
         Chapter chapter = chapterRepository.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.CHAPTER_NOT_EXISTED));
 
-        verifyOwnership(chapter.getBook());
 
         if (chapterRepository.existsByBookIdAndChapterNumberAndIdNot(chapter.getBook().getId(), request.getChapterNumber(), id)) {
             throw new AppException(ErrorCode.CHAPTER_NUMBER_EXISTED);
@@ -203,7 +162,7 @@ public class ChapterService {
 
         chapterMapper.updateChapter(chapter, request);
 
-        if (Boolean.TRUE.equals(request.getIsFree())) {
+        if (request.getIsFree()) {
             chapter.markAsFree();
         } else {
             BigDecimal price = request.getPrice();
@@ -215,18 +174,72 @@ public class ChapterService {
             chapter.setIsFree(false);
         }
 
-        return chapterMapper.toChapterResponse(chapterRepository.save(chapter));
+        return chapterMapper.toChapterResponse(chapterRepository.save(chapter),false);
     }
 
 
 
     @Transactional
     public void deleteChapter(Long id) {
-        Chapter chapter = chapterRepository.findById(id)
-                .orElseThrow(() -> new AppException(ErrorCode.CHAPTER_NOT_EXISTED));
-
-        verifyOwnership(chapter.getBook());
+        if (!chapterRepository.existsById(id)) {
+            throw new AppException(ErrorCode.CHAPTER_NOT_EXISTED);
+        }
 
         chapterRepository.deleteById(id);
     }
+
+
+    @Transactional
+    public List<ChapterResponse> batchUpdateChapters(Long bookId, ChapterBatchUpdateRequest request) {
+        if (!bookRepository.existsById(bookId)) {
+            throw new AppException(ErrorCode.BOOK_NOT_EXISTED);
+        }
+
+        List<Chapter> chaptersToUpdate = chapterRepository.findAllById(request.getChapterIds());
+
+            for (Chapter chapter : chaptersToUpdate) {
+                    if (Boolean.TRUE.equals(request.getIsFree())) {
+                        chapter.setIsFree(true);
+                    } else {
+                        BigDecimal price = request.getPrice();
+                        if (price == null || price.compareTo(BigDecimal.ZERO) <= 0)
+                        {
+                                throw new AppException(ErrorCode.INVALID_PRICE);
+                            }
+                            chapter.setPrice(price);
+                            chapter.setIsFree(false);
+                        } 
+                       
+                    }
+
+            List<Chapter> savedChapters = chapterRepository.saveAll(chaptersToUpdate);
+            return savedChapters.stream()
+                    .map(chapter -> chapterMapper.toChapterResponse(chapter, false))
+                    .collect(Collectors.toList());
+    }
+
+    @Transactional
+    public void deleteAllChaptersByBook(Long bookId) {
+        Book book =bookRepository.findById(bookId).orElseThrow(() -> new AppException(ErrorCode.BOOK_NOT_EXISTED));
+
+        List<Chapter> chaptersToDelete = book.getChapters();
+
+        chapterRepository.deleteAll(chaptersToDelete);
+    }
+
+
+    @Transactional
+    public void deleteSelectedChapters(Long bookId, List<Long> chapterIds) {
+
+        if (!bookRepository.existsById(bookId)) {
+            throw new AppException(ErrorCode.BOOK_NOT_EXISTED);
+        }
+
+        List<Chapter> chaptersToDelete = chapterRepository.findAllById(chapterIds);
+
+
+        chapterRepository.deleteAll(chaptersToDelete);
+    }
+
+
 }

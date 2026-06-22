@@ -10,6 +10,8 @@ import org.example.lv_backend.mapper.ChapterUnlockMapper;
 import org.example.lv_backend.repository.ChapterRepository;
 import org.example.lv_backend.repository.ChapterUnlockRepository;
 import org.example.lv_backend.repository.UserRepository;
+import org.example.lv_backend.configuration.SecurityUtil;
+import org.example.lv_backend.entity.BookStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -23,6 +25,7 @@ public class ChapterUnlockService {
     private final ChapterRepository chapterRepository;
     private final UserRepository userRepository;
     private final ChapterUnlockMapper chapterUnlockMapper;
+    private final SecurityUtil securityUtil;
 
     @Transactional
     public void unlockChapter(Long chapterId) {
@@ -36,6 +39,10 @@ public class ChapterUnlockService {
 
         Chapter chapter = chapterRepository.findById(chapterId)
                 .orElseThrow(() -> new AppException(ErrorCode.CHAPTER_NOT_EXISTED));
+
+        if (!securityUtil.isAdmin() && chapter.getBook().getStatus() == BookStatus.UNAVAILABLE) {
+            throw new AppException(ErrorCode.CHAPTER_NOT_EXISTED);
+        }
 
         if (Boolean.TRUE.equals(chapter.getIsFree())) {
             throw new AppException(ErrorCode.CHAPTER_ALREADY_FREE);
@@ -52,9 +59,6 @@ public class ChapterUnlockService {
         user.setAmount(user.getAmount().subtract(chapter.getPrice()));
         userRepository.save(user);
 
-        User uploader = chapter.getBook().getUser();
-        uploader.setAmount(uploader.getAmount().add(chapter.getPrice()));
-        userRepository.save(uploader);
 
         ChapterUnlock chapterUnlock = chapterUnlockMapper.toChapterUnlock(user, chapter);
         chapterUnlockRepository.save(chapterUnlock);

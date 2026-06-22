@@ -18,10 +18,7 @@ import java.util.List;
 @Repository
 public interface BookRepository extends JpaRepository<Book,Long> {
 
-    Page<Book> findByUserName(String name, Pageable pageable);
 
-    @Query("SELECT b FROM Book b WHERE b.user.name = :name AND (LOWER(b.title) LIKE LOWER(CONCAT('%', :keyword, '%')) OR LOWER(b.author) LIKE LOWER(CONCAT('%', :keyword, '%')))")
-    Page<Book> findByUserNameAndKeyword(@Param("name") String name, @Param("keyword") String keyword, Pageable pageable);
 
     Boolean existsByTitle (String title);
 
@@ -33,4 +30,7 @@ public interface BookRepository extends JpaRepository<Book,Long> {
 
     Page<Book> findByStatus(BookStatus bookStatus, Pageable pageable);
     Page<Book> findByBookLists_Id(Long bookListId, Pageable pageable);
+
+    @Query("SELECT b FROM Book b WHERE b.user.name = :name AND (LOWER(b.title) LIKE LOWER(CONCAT('%', :keyword, '%')) OR LOWER(b.author) LIKE LOWER(CONCAT('%', :keyword, '%')))")
+    Page<Book> findByKeyword(@Param("name") String name, @Param("keyword") String keyword, Pageable pageable);
 }

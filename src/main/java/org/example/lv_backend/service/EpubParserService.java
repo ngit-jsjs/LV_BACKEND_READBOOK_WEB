@@ -96,7 +96,6 @@ public class EpubParserService {
                         .nextAnchor(nextAnchor)
                         .isFree(false)
                         .price(BigDecimal.valueOf(10))
-                        .isPublished(false)
                         .build();
                 chapters.add(chapter);
                 chapterNumber++;

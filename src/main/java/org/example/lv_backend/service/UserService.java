@@ -41,8 +41,6 @@ public class UserService {
     private final ImageStorageService imageStorageService;
     private final OtpService otpService;
     private final EmailService emailService;
-// bổ sung xác thực email, quen mat khau, thong tin hoa don gui email bat ky tranh fake mail voi spam
-//them cot xac thuc false, xac thuc roi thi true, them trang nhap ma otp
     private UserResponse mapToUserResponse(User user) {
         UserResponse response = userMapper.toUserResponse(user);
         if (user.getRoles() != null) {
@@ -87,8 +85,8 @@ public class UserService {
 
         UserResponse response = mapToUserResponse(userRepository.save(user));
 
-        String otp = otpService.generateAndSaveOtp(user.getEmail());
-        emailService.sendOtpEmail(user.getEmail(), otp);
+        // String otp = otpService.generateAndSaveOtp(user.getEmail());
+        // emailService.sendOtpEmail(user.getEmail(), otp);
 
 
         return response;

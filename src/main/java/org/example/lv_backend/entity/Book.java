@@ -45,7 +45,8 @@ public class Book {
     private String description;
 
     @Enumerated(EnumType.STRING)
-    private BookStatus status = BookStatus.DRAFT;
+    @Builder.Default
+    private BookStatus status = BookStatus.UNAVAILABLE;
 
 
 
@@ -65,6 +66,7 @@ public class Book {
     //uploader
 
     @OneToMany(mappedBy = "book", cascade = CascadeType.ALL)
+    @Builder.Default
     private List<Chapter> chapters = new ArrayList<>();
 
     @ManyToMany
@@ -73,18 +75,23 @@ public class Book {
             joinColumns = @JoinColumn(name = "book_id"),
             inverseJoinColumns = @JoinColumn(name = "category_id")
     )
+    @Builder.Default
     private Set<Category> categories = new HashSet<>();
 
     @OneToMany(mappedBy = "book")
+    @Builder.Default
     private List<Rating> ratings = new ArrayList<>();
 
     @ManyToMany(mappedBy = "books")
+    @Builder.Default
     private Set<BookList> bookLists = new HashSet<>();
 
     @OneToMany(mappedBy = "book")
+    @Builder.Default
     private List<Recommendation> recommendations = new ArrayList<>();
 
     @OneToMany(mappedBy = "book")
+    @Builder.Default
     private List<ReadingHistory> readingHistories = new ArrayList<>();
 
 

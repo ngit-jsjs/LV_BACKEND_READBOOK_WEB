@@ -6,17 +6,22 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ChapterListResponse {
+public class ChapterDetailResponse {
     private Long id;
-    private Long chapterNumber;
+    private Long bookId;
+    private Integer chapterNumber;
+    Integer sectionIndex;
     private String title;
+    private String content;
     private Boolean isFree;
-    private Boolean isPublished;
     private BigDecimal price;
     private Boolean isLocked;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 }
