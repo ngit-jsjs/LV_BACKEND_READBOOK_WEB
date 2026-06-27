@@ -1,7 +1,7 @@
 package org.example.lv_backend.service;
 
 import lombok.RequiredArgsConstructor;
-import org.example.lv_backend.configuration.SecurityUtil;
+import org.example.lv_backend.util.SecurityUtil;
 import org.example.lv_backend.dto.request.booklist.BookListRequest;
 import org.example.lv_backend.dto.response.book.BookListResponse;
 import org.example.lv_backend.dto.response.book.BookResponse;
@@ -105,7 +105,6 @@ public class BookListService {
 
         String username = securityUtil.getCurrentUsername();
         
-        // Tránh đặt tên trùng lặp với các danh sách khác đang có của cùng một user
         if (bookListRepository.existsByNameAndIdNotAndUser_Name(request.getName(), id, username)) {
             throw new AppException(ErrorCode.BOOKLIST_EXISTED);
         }

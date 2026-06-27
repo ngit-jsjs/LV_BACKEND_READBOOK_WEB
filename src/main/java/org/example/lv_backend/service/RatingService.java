@@ -1,7 +1,7 @@
 package org.example.lv_backend.service;
 
 import lombok.RequiredArgsConstructor;
-import org.example.lv_backend.configuration.SecurityUtil;
+import org.example.lv_backend.util.SecurityUtil;
 import org.example.lv_backend.dto.request.rating.RatingRequest;
 import org.example.lv_backend.dto.response.rating.RatingResponse;
 import org.example.lv_backend.entity.Book;

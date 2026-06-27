@@ -1,11 +1,9 @@
 package org.example.lv_backend.service;
 
 import lombok.RequiredArgsConstructor;
-import org.example.lv_backend.configuration.SecurityUtil;
 import org.example.lv_backend.configuration.WebConfig;
 import org.example.lv_backend.dto.request.user.UserCreationRequest;
 import org.example.lv_backend.dto.request.user.UserUpdateRequest;
-import org.example.lv_backend.dto.response.auth.AuthenticationResponse;
 import org.example.lv_backend.dto.response.user.SearchingUserResponse;
 import org.example.lv_backend.dto.response.user.UserResponse;
 import org.example.lv_backend.entity.Role;
@@ -16,10 +14,12 @@ import org.example.lv_backend.exception.ErrorCode;
 import org.example.lv_backend.mapper.UserMapper;
 import org.example.lv_backend.repository.RoleRepository;
 import org.example.lv_backend.repository.UserRepository;
+import org.example.lv_backend.service.auth.EmailService;
+import org.example.lv_backend.service.auth.OtpService;
+import org.example.lv_backend.service.storage.ImageStorageService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.example.lv_backend.entity.Book;
@@ -36,11 +36,9 @@ public class UserService {
     private final UserMapper userMapper;
     private final RoleRepository roleRepository;
     private final WebConfig webConfig;
-    private final AuthenticationService authenticationService;
     private final ImageStorageService imageStorageService;
-    private final SecurityUtil securityUtil;
-// bổ sung xác thực email, quen mat khau, thong tin hoa don gui email bat ky tranh fake mail voi spam
-//them cot xac thuc false, xac thuc roi thi true, them trang nhap ma otp
+    private final OtpService otpService;
+    private final EmailService emailService;
     private UserResponse mapToUserResponse(User user) {
         UserResponse response = userMapper.toUserResponse(user);
         if (user.getRoles() != null) {
@@ -84,6 +82,8 @@ public class UserService {
         user.setRoles(roles);
 
         UserResponse response = mapToUserResponse(userRepository.save(user));
+
+
 
         return response;
 

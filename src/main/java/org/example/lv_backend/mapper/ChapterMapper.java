@@ -2,7 +2,7 @@ package org.example.lv_backend.mapper;
 
 import org.example.lv_backend.dto.request.chapter.ChapterCreationRequest;
 import org.example.lv_backend.dto.request.chapter.ChapterUpdateRequest;
-import org.example.lv_backend.dto.response.chapter.ChapterListResponse;
+import org.example.lv_backend.dto.response.chapter.ChapterDetailResponse;
 import org.example.lv_backend.dto.response.chapter.ChapterResponse;
 import org.example.lv_backend.entity.Chapter;
 import org.mapstruct.Mapper;
@@ -17,17 +17,13 @@ public interface ChapterMapper {
     @Mapping(target = "isFree", ignore = true)
     @Mapping(target = "price", ignore = true)
     Chapter toChapter(ChapterCreationRequest request);
-
-    @Mapping(source = "book.id", target = "bookId")
-    ChapterResponse toChapterResponse(Chapter chapter);
-
     @Mapping(target = "isLocked", source = "isLocked")
-    ChapterListResponse toChapterListResponse(Chapter chapter, boolean isLocked);
+    ChapterResponse toChapterResponse(Chapter chapter, boolean isLocked);
 
     @Mapping(source = "chapter.book.id", target = "bookId")
     @Mapping(target = "content", ignore = true)
     @Mapping(target = "isLocked", source = "isLocked")
-    ChapterResponse toChapterDetailResponse(Chapter chapter, boolean isLocked);
+    ChapterDetailResponse toChapterDetailResponse(Chapter chapter, boolean isLocked);
 
 
     @Mapping(target = "book", ignore = true)

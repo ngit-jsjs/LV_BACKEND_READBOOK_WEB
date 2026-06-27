@@ -28,5 +28,6 @@ public class Plan {
     private Long amount;
 
     @OneToMany(mappedBy = "plan")
+    @Builder.Default
     private List<Subscription> subscriptions = new ArrayList<>();
 }

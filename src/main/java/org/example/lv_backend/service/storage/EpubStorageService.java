@@ -1,4 +1,4 @@
-package org.example.lv_backend.service;
+package org.example.lv_backend.service.storage;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;

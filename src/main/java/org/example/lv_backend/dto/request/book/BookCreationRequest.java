@@ -34,7 +34,6 @@ public class BookCreationRequest {
     
     @NotNull(message = "STATUS_NULL")
     private BookStatus status;
-    @NotBlank(message = "DESCRIPTION_BLANK")
     private String description;
     
     private String publisher;

@@ -5,14 +5,13 @@ import lombok.RequiredArgsConstructor;
 import org.example.lv_backend.dto.request.auth.AuthenticationRequest;
 import org.example.lv_backend.dto.request.auth.IntrospectRequest;
 import org.example.lv_backend.dto.request.auth.LogoutRequest;
+import org.example.lv_backend.dto.request.auth.VerifyOtpRequest;
+import org.example.lv_backend.dto.request.auth.ResetPasswordRequest;
 import org.example.lv_backend.dto.response.ApiResponse;
 import org.example.lv_backend.dto.response.auth.AuthenticationResponse;
 import org.example.lv_backend.dto.response.auth.IntrospectResponse;
-import org.example.lv_backend.service.AuthenticationService;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.example.lv_backend.service.auth.AuthenticationService;
+import org.springframework.web.bind.annotation.*;
 
 import java.text.ParseException;
 
@@ -45,5 +44,25 @@ public class AuthenticationController {
         authenticationService.logout(request);
         return ApiResponse.<Void>builder()
                 .build();
+    }
+
+    @PostMapping("/verify-email")
+    public ApiResponse<String> verifyEmail(@RequestBody VerifyOtpRequest request) {
+        return authenticationService.verifyEmail(request);
+    }
+
+    @PostMapping("/resend-otp")
+    public ApiResponse<String> resendOtp(@RequestParam String email) {
+        return authenticationService.resendOtp(email);
+    }
+
+    @PostMapping("/forgot-password")
+    public ApiResponse<String> forgotPassword(@RequestParam String email) {
+        return authenticationService.forgotPassword(email);
+    }
+
+    @PostMapping("/reset-password")
+    public ApiResponse<String> resetPassword(@RequestBody ResetPasswordRequest request) {
+        return authenticationService.resetPassword(request);
     }
 }

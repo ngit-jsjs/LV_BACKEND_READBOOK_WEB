@@ -2,7 +2,7 @@ package org.example.lv_backend.configuration;
 
 import com.nimbusds.jose.JOSEException;
 import org.example.lv_backend.dto.request.auth.IntrospectRequest;
-import org.example.lv_backend.service.AuthenticationService;
+import org.example.lv_backend.service.auth.AuthenticationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;

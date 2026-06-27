@@ -1,4 +1,4 @@
-package org.example.lv_backend.dto.response.chapter;
+package org.example.lv_backend.dto.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -11,11 +11,10 @@ import java.math.BigDecimal;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ChapterResponse {
+public class PlanResponse {
     private Long id;
-    private Long chapterNumber;
-    private String title;
-    private Boolean isFree;
+    private String name;
+    private String description;
     private BigDecimal price;
-    private Boolean isLocked;
+    private Long amount;
 }

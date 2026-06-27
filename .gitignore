@@ -45,3 +45,4 @@ application.properties
 *.jar
 
 src/main/resources/application.properties
+uploads/epubs/*

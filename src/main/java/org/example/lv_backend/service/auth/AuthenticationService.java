@@ -1,4 +1,4 @@
-package org.example.lv_backend.service;
+package org.example.lv_backend.service.auth;
 
 import com.nimbusds.jose.*;
 import com.nimbusds.jose.crypto.MACSigner;
@@ -12,20 +12,22 @@ import org.example.lv_backend.configuration.WebConfig;
 import org.example.lv_backend.dto.request.auth.AuthenticationRequest;
 import org.example.lv_backend.dto.request.auth.IntrospectRequest;
 import org.example.lv_backend.dto.request.auth.LogoutRequest;
+import org.example.lv_backend.dto.request.auth.VerifyOtpRequest;
+import org.example.lv_backend.dto.request.auth.ResetPasswordRequest;
+import org.example.lv_backend.dto.response.ApiResponse;
 import org.example.lv_backend.dto.response.auth.AuthenticationResponse;
 import org.example.lv_backend.dto.response.auth.IntrospectResponse;
 import org.example.lv_backend.entity.InvalidatedToken;
-import org.example.lv_backend.entity.Role;
-import org.example.lv_backend.entity.RoleName;
 import org.example.lv_backend.entity.User;
 import org.example.lv_backend.exception.AppException;
 import org.example.lv_backend.exception.ErrorCode;
 import org.example.lv_backend.repository.InvalidatedTokenRepository;
+import org.example.lv_backend.repository.OtpVerificationRepository;
 import org.example.lv_backend.repository.RoleRepository;
 import org.example.lv_backend.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
 import java.text.ParseException;
@@ -42,7 +44,10 @@ public class AuthenticationService {
     private final InvalidatedTokenRepository invalidatedTokenRepository;
     private final UserRepository userRepository;
     private final WebConfig webConfig;
-    private final RoleRepository roleRepository;
+    private final OtpService otpService;
+    private final OtpVerificationRepository otpVerificationRepository;
+    private final EmailService emailService;
+
 
     @NonFinal
     @Value("${jwt.secretKey}")
@@ -149,4 +154,73 @@ public class AuthenticationService {
         return  signedJWT;
     }
 
+
+    @Transactional
+    public ApiResponse<String> verifyEmail(VerifyOtpRequest request){
+        boolean isValid= otpService.verifyOtp(request.getEmail(), request.getOtp());
+        if (!isValid) {
+            throw new AppException(ErrorCode.INVALID_OTP);
+        }
+        User user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+
+        user.setVerified(true);
+        userRepository.save(user);
+
+        otpVerificationRepository.deleteByEmail(request.getEmail());
+
+        return ApiResponse.<String>builder()
+                .result("Xác thực email thành công! Bạn hiện đã có thể đăng nhập.")
+                .build();
+
+    }
+
+    public ApiResponse<String> resendOtp(String email) {
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+
+        if (user.isVerified()) {
+            throw new AppException(ErrorCode.ALREADY_AUTHENTICATED);
+        }
+
+        String otp = otpService.generateAndSaveOtp(email);
+        emailService.sendOtpEmail(email, otp);
+
+        return ApiResponse.<String>builder()
+                .result("Đã gửi lại mã OTP mới vào email của bạn.")
+                .build();
+    }
+
+    public ApiResponse<String> forgotPassword(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+
+        String otp = otpService.generateAndSaveOtp(email);
+        emailService.sendForgotPasswordEmail(email, otp);
+
+        return ApiResponse.<String>builder()
+                .result("Mã OTP khôi phục mật khẩu đã được gửi đến email của bạn.")
+                .build();
+    }
+
+    @Transactional
+    public ApiResponse<String> resetPassword(ResetPasswordRequest request) {
+        boolean isValid = otpService.verifyOtp(request.getEmail(), request.getOtp());
+        if (!isValid) {
+            throw new AppException(ErrorCode.INVALID_OTP);
+        }
+
+        User user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+
+        user.setPassword(webConfig.passwordEncoder().encode(request.getNewPassword()));
+        userRepository.save(user);
+
+        otpVerificationRepository.deleteByEmail(request.getEmail());
+
+        return ApiResponse.<String>builder()
+                .result("Khôi phục mật khẩu thành công. Vui lòng đăng nhập lại với mật khẩu mới.")
+                .build();
+    }
 }

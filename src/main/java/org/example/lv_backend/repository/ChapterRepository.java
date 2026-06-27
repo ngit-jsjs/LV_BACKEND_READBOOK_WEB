@@ -8,13 +8,14 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
+
 @Repository
 public interface ChapterRepository extends JpaRepository<Chapter, Long> {
     Page<Chapter> findByBookIdOrderByChapterNumberAsc(Long bookId, Pageable pageable);
 
-    Page<Chapter> findByBookIdAndIsPublishedTrueOrderByChapterNumberAsc(Long bookId, Pageable pageable);
-
     boolean existsByBookIdAndChapterNumberAndIdNot(Long bookId, Long chapterNumber, Long id);
+
 
 
 }

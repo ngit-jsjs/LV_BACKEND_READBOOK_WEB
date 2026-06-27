@@ -22,9 +22,12 @@ public class ChapterUpdateRequest {
 
     private String content;
 
+    @Builder.Default
     private Boolean isFree = false;
 
+    @Builder.Default
     private Boolean isPublished = false;
 
+    @Builder.Default
     private BigDecimal price = BigDecimal.ZERO;
 }
