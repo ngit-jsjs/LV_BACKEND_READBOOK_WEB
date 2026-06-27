@@ -29,7 +29,9 @@ public class SecurityConfig {
             "/auth/forgot-password",
             "/auth/reset-password"
     };
-    private final String[] GET_PUBLIC_ENDPOINTS = {"/user/search", "/uploads/**","/books/search","/books/*","/chapters/**", "/categories", "/categories/**"};
+    private final String[] GET_PUBLIC_ENDPOINTS = {"/user/search", "/user/{userId:[0-9]+}", "/uploads/**",
+            "/books", "/books/search", "/books/*", "/chapters/**", "/categories", "/categories/**",
+            "/api/payment/vnpay-return","/api/payment/vnpay-ipn","/api/plans"};
 
 
     @Autowired

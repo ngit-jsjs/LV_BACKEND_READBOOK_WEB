@@ -17,7 +17,7 @@ public enum ErrorCode {
     USER_EXISTED(1010,"User này đã tồn tại",HttpStatus.BAD_REQUEST),
     EMAIL_EXISTED(1011,"Email này đã tồn tại",HttpStatus.BAD_REQUEST),
     UNAUTHENTICATED(1012,"Lỗi token",HttpStatus.UNAUTHORIZED),
-    ALREADY_AUTHENTICATED(1013,"Người dùng đã đăng nhập",HttpStatus.BAD_REQUEST),
+    ALREADY_AUTHENTICATED(1013,"Tài khoản này đã được xác thực email từ trước.",HttpStatus.BAD_REQUEST),
     NAMEBOOK_EXISTED(1014,"Tên sách này đã tồn tại",HttpStatus.BAD_REQUEST),
     BOOK_NOT_EXISTED(1015,"Sách không tồn tại",HttpStatus.NOT_FOUND),
     UNAUTHORIZED_BOOK(1007,"Không có quyền chỉnh sửa nội dung sách",HttpStatus.FORBIDDEN),
@@ -53,6 +53,8 @@ public enum ErrorCode {
     INVALID_IMAGE_FILE(1071, "File ảnh bìa không hợp lệ (chỉ chấp nhận định dạng png, jpg, jpeg, webp)", HttpStatus.BAD_REQUEST),
     EMAIL_NOT_VERIFIED(1080, "Email của bạn chưa được xác thực. Vui lòng xác thực trước khi đăng nhập.", HttpStatus.FORBIDDEN),
     INVALID_OTP(1081, "Mã OTP không chính xác hoặc đã hết hạn", HttpStatus.BAD_REQUEST),
+    CANNOT_HIDE_OR_DELETE_PURCHASED_BOOK(1082, "Không thể ẩn hoặc xóa sách này vì đã có người dùng mua chương", HttpStatus.BAD_REQUEST),
+    CANNOT_UPDATE_EPUB_PURCHASED_BOOK(1083, "Không thể cập nhật file EPUB của sách này vì đã có người dùng mua chương", HttpStatus.BAD_REQUEST),
     ;
 
 

@@ -7,7 +7,12 @@ import org.hibernate.annotations.UpdateTimestamp;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "reading_history")
+@Table(
+    name = "reading_history",
+    uniqueConstraints = {
+        @UniqueConstraint(columnNames = {"user_id", "book_id"})
+    }
+)
 @Getter
 @Setter
 @NoArgsConstructor

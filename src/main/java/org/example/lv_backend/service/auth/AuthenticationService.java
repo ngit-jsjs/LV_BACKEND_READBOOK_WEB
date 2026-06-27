@@ -27,6 +27,7 @@ import org.example.lv_backend.repository.RoleRepository;
 import org.example.lv_backend.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
 import java.text.ParseException;
@@ -154,6 +155,7 @@ public class AuthenticationService {
     }
 
 
+    @Transactional
     public ApiResponse<String> verifyEmail(VerifyOtpRequest request){
         boolean isValid= otpService.verifyOtp(request.getEmail(), request.getOtp());
         if (!isValid) {
@@ -202,6 +204,7 @@ public class AuthenticationService {
                 .build();
     }
 
+    @Transactional
     public ApiResponse<String> resetPassword(ResetPasswordRequest request) {
         boolean isValid = otpService.verifyOtp(request.getEmail(), request.getOtp());
         if (!isValid) {

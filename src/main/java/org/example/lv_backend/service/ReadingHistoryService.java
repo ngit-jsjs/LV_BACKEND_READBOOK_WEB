@@ -1,7 +1,7 @@
 package org.example.lv_backend.service;
 
 import lombok.RequiredArgsConstructor;
-import org.example.lv_backend.configuration.SecurityUtil;
+import org.example.lv_backend.util.SecurityUtil;
 import org.example.lv_backend.dto.request.readinghistory.ReadingHistoryRequest;
 import org.example.lv_backend.dto.response.readinghistory.ReadingHistoryResponse;
 import org.example.lv_backend.entity.*;
@@ -17,7 +17,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor

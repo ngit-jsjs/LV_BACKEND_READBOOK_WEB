@@ -10,7 +10,7 @@ import org.example.lv_backend.mapper.ChapterUnlockMapper;
 import org.example.lv_backend.repository.ChapterRepository;
 import org.example.lv_backend.repository.ChapterUnlockRepository;
 import org.example.lv_backend.repository.UserRepository;
-import org.example.lv_backend.configuration.SecurityUtil;
+import org.example.lv_backend.util.SecurityUtil;
 import org.example.lv_backend.entity.BookStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;

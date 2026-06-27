@@ -78,7 +78,7 @@ public class Book {
     @Builder.Default
     private Set<Category> categories = new HashSet<>();
 
-    @OneToMany(mappedBy = "book")
+    @OneToMany(mappedBy = "book", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private List<Rating> ratings = new ArrayList<>();
 
@@ -86,11 +86,11 @@ public class Book {
     @Builder.Default
     private Set<BookList> bookLists = new HashSet<>();
 
-    @OneToMany(mappedBy = "book")
+    @OneToMany(mappedBy = "book", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private List<Recommendation> recommendations = new ArrayList<>();
 
-    @OneToMany(mappedBy = "book")
+    @OneToMany(mappedBy = "book", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private List<ReadingHistory> readingHistories = new ArrayList<>();
 

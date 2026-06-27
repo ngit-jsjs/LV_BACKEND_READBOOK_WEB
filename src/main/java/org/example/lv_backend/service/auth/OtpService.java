@@ -15,10 +15,11 @@ import java.util.Random;
 @RequiredArgsConstructor
 public class OtpService {
     private final OtpVerificationRepository otpVerificationRepository;
+
     @Transactional
     public String generateAndSaveOtp(String email) {
         otpVerificationRepository.deleteByEmail(email);
-
+        otpVerificationRepository.flush();
         String otp = String.format("%06d", new Random().nextInt(1000000));
 
         OtpVerification otpVerification = OtpVerification.builder()

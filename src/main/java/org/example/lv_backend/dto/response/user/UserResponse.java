@@ -19,6 +19,7 @@ public class UserResponse {
     private String name;
     private Set<RoleName> roles;
     private BigDecimal amount;
+    private boolean verified;
 //    private List<PublishedBookResponse> publishedBooks;
 //    private List<FavoriteBookResponse> favortiteBook;
 }

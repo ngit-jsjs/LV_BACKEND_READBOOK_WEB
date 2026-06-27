@@ -1,7 +1,6 @@
 package org.example.lv_backend.service;
 
 import lombok.RequiredArgsConstructor;
-import org.example.lv_backend.configuration.SecurityUtil;
 import org.example.lv_backend.configuration.WebConfig;
 import org.example.lv_backend.dto.request.user.UserCreationRequest;
 import org.example.lv_backend.dto.request.user.UserUpdateRequest;
@@ -15,7 +14,6 @@ import org.example.lv_backend.exception.ErrorCode;
 import org.example.lv_backend.mapper.UserMapper;
 import org.example.lv_backend.repository.RoleRepository;
 import org.example.lv_backend.repository.UserRepository;
-import org.example.lv_backend.service.auth.AuthenticationService;
 import org.example.lv_backend.service.auth.EmailService;
 import org.example.lv_backend.service.auth.OtpService;
 import org.example.lv_backend.service.storage.ImageStorageService;
@@ -85,8 +83,6 @@ public class UserService {
 
         UserResponse response = mapToUserResponse(userRepository.save(user));
 
-        // String otp = otpService.generateAndSaveOtp(user.getEmail());
-        // emailService.sendOtpEmail(user.getEmail(), otp);
 
 
         return response;

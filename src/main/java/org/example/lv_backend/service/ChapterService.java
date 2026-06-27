@@ -1,9 +1,8 @@
 package org.example.lv_backend.service;
 
 import lombok.RequiredArgsConstructor;
-import org.example.lv_backend.configuration.SecurityUtil;
+import org.example.lv_backend.util.SecurityUtil;
 import org.example.lv_backend.dto.request.chapter.ChapterBatchUpdateRequest;
-import org.example.lv_backend.dto.request.chapter.ChapterCreationRequest;
 import org.example.lv_backend.dto.request.chapter.ChapterUpdateRequest;
 import org.example.lv_backend.dto.response.chapter.ChapterResponse;
 import org.example.lv_backend.dto.response.chapter.ChapterDetailResponse;
@@ -18,6 +17,7 @@ import org.example.lv_backend.repository.BookRepository;
 import org.example.lv_backend.repository.ChapterRepository;
 import org.example.lv_backend.repository.ChapterUnlockRepository;
 import org.example.lv_backend.repository.UserRepository;
+import org.example.lv_backend.service.storage.EpubStorageService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -42,6 +42,7 @@ public class ChapterService {
     private final ChapterUnlockRepository chapterUnlockRepository;
     private final SecurityUtil securityUtil;
     private final EpubParserService epubParserService;
+    private final EpubStorageService epubStorageService;
 
 
 
@@ -191,11 +192,12 @@ public class ChapterService {
 
     @Transactional
     public List<ChapterResponse> batchUpdateChapters(Long bookId, ChapterBatchUpdateRequest request) {
-        if (!bookRepository.existsById(bookId)) {
-            throw new AppException(ErrorCode.BOOK_NOT_EXISTED);
-        }
+        Book book = bookRepository.findById(bookId)
+                .orElseThrow(() -> new AppException(ErrorCode.BOOK_NOT_EXISTED));
 
-        List<Chapter> chaptersToUpdate = chapterRepository.findAllById(request.getChapterIds());
+        List<Chapter> chaptersToUpdate = (request.getChapterIds() == null || request.getChapterIds().isEmpty())
+                ? book.getChapters()
+                : chapterRepository.findAllById(request.getChapterIds());
 
             for (Chapter chapter : chaptersToUpdate) {
                     if (Boolean.TRUE.equals(request.getIsFree())) {
@@ -220,26 +222,19 @@ public class ChapterService {
 
     @Transactional
     public void deleteAllChaptersByBook(Long bookId) {
-        Book book =bookRepository.findById(bookId).orElseThrow(() -> new AppException(ErrorCode.BOOK_NOT_EXISTED));
+        Book book = bookRepository.findById(bookId)
+                .orElseThrow(() -> new AppException(ErrorCode.BOOK_NOT_EXISTED));
 
-        List<Chapter> chaptersToDelete = book.getChapters();
+        List<Chapter> chaptersToDelete = new ArrayList<>(book.getChapters());
+        book.getChapters().clear();
 
         chapterRepository.deleteAll(chaptersToDelete);
-    }
 
-
-    @Transactional
-    public void deleteSelectedChapters(Long bookId, List<Long> chapterIds) {
-
-        if (!bookRepository.existsById(bookId)) {
-            throw new AppException(ErrorCode.BOOK_NOT_EXISTED);
+        String epubPath = book.getStoragePath();
+        if (epubPath != null) {
+            epubStorageService.deleteFile(epubPath);
+            book.setStoragePath(null);
+            bookRepository.save(book);
         }
-
-        List<Chapter> chaptersToDelete = chapterRepository.findAllById(chapterIds);
-
-
-        chapterRepository.deleteAll(chaptersToDelete);
     }
-
-
 }

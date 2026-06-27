@@ -20,9 +20,7 @@ public class EmailService {
             message.setSubject("Mã Xác Thực Tài Khoản Đọc Sách");
             message.setText("Mã OTP của bạn là: " + otpCode + ". Mã này sẽ hết hạn trong vòng 5 phút.");
             mailSender.send(message);
-            log.info("Đã gửi email OTP tới {}", toEmail);
         } catch (Exception e) {
-            log.error("Lỗi khi gửi email xác thực tới {}", toEmail, e);
         }
     }
     @Async
@@ -33,9 +31,7 @@ public class EmailService {
             message.setSubject("Yêu Cầu Khôi Phục Mật Khẩu");
             message.setText("Mã OTP khôi phục mật khẩu của bạn là: " + otpCode + ". Mã này sẽ hết hạn trong vòng 5 phút.");
             mailSender.send(message);
-            log.info("Đã gửi email OTP quên mật khẩu tới {}", toEmail);
         } catch (Exception e) {
-            log.error("Lỗi khi gửi email OTP quên mật khẩu tới {}", toEmail, e);
         }
     }
 

@@ -33,9 +33,6 @@ public class Chapter {
 
         private String nextAnchor;
 
-//        @Lob
-//        @Column(columnDefinition = "TEXT")
-//        private String content;
 
         private Boolean isFree;
 

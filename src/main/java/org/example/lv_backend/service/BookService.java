@@ -2,7 +2,7 @@ package org.example.lv_backend.service;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.example.lv_backend.configuration.SecurityUtil;
+import org.example.lv_backend.util.SecurityUtil;
 import org.example.lv_backend.dto.request.book.BookCreationRequest;
 import org.example.lv_backend.dto.response.book.BookResponse;
 import org.example.lv_backend.entity.*;
@@ -13,6 +13,7 @@ import org.example.lv_backend.repository.BookRepository;
 import org.example.lv_backend.repository.CategoryRepository;
 import org.example.lv_backend.repository.UserRepository;
 import org.example.lv_backend.repository.ChapterRepository;
+import org.example.lv_backend.repository.ChapterUnlockRepository;
 import org.example.lv_backend.service.storage.EpubStorageService;
 import org.example.lv_backend.service.storage.ImageStorageService;
 import org.springframework.data.domain.Page;
@@ -40,6 +41,7 @@ public class BookService {
     private final EpubStorageService epubStorageService;
     private final EpubParserService epubParserService;
     private final ChapterRepository chapterRepository;
+    private final ChapterUnlockRepository chapterUnlockRepository;
 
     private BookResponse mapToBookResponse(Book book) {
         BookResponse response = bookMapper.toBookResponse(book);
@@ -72,7 +74,7 @@ public class BookService {
         String cleanKeyword = keyword != null ? keyword.trim() : "";
 
         Page<Book> books = bookRepository.findByStatusAndKeyword(
-                BookStatus.AVAILABlE,
+                BookStatus.AVAILABLE,
                 cleanKeyword,
                 pageable
         );
@@ -128,6 +130,11 @@ public class BookService {
         Book book=bookRepository.findById(id).
                 orElseThrow(()->new AppException(ErrorCode.BOOK_NOT_EXISTED));
 
+        if (request.getStatus() == BookStatus.UNAVAILABLE && book.getStatus() == BookStatus.AVAILABLE) {
+            if (chapterUnlockRepository.existsByChapter_Book_Id(id)) {
+                throw new AppException(ErrorCode.CANNOT_HIDE_OR_DELETE_PURCHASED_BOOK);
+            }
+        }
 
         var title = request.getTitle();
         if(bookRepository.existsByTitleAndIdNot(title, id))
@@ -169,7 +176,7 @@ public class BookService {
         Book book = bookRepository.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.BOOK_NOT_EXISTED));
 
-        if (book.getStatus() == BookStatus.UNAVAILABLE ) {
+        if (!securityUtil.isAdmin() && book.getStatus() == BookStatus.UNAVAILABLE) {
             throw new AppException(ErrorCode.BOOK_NOT_EXISTED);
         }
 
@@ -183,6 +190,19 @@ public class BookService {
         Book book = bookRepository.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.BOOK_NOT_EXISTED));
 
+        if (chapterUnlockRepository.existsByChapter_Book_Id(id)) {
+            throw new AppException(ErrorCode.CANNOT_HIDE_OR_DELETE_PURCHASED_BOOK);
+        }
+
+        for (BookList bookList : book.getBookLists()) {
+            bookList.getBooks().remove(book);
+        }
+
+        if (book.getChapters() != null && !book.getChapters().isEmpty()) {
+            List<Chapter> chaptersToDelete = new ArrayList<>(book.getChapters());
+            book.getChapters().clear();
+            chapterRepository.deleteAll(chaptersToDelete);
+        }
 
         String coverImageUrl = book.getCoverImageUrl();
         String epubStoragePath = book.getStoragePath();
@@ -209,7 +229,7 @@ public class BookService {
 
         return bookRepository
                 .findByStatus(
-                        BookStatus.AVAILABlE,
+                        BookStatus.AVAILABLE,
                         pageable
                 )
                 .map(this::mapToBookResponse);
@@ -227,12 +247,17 @@ public class BookService {
         Book book = bookRepository.findById(bookId)
                 .orElseThrow(() -> new AppException(ErrorCode.BOOK_NOT_EXISTED));
 
-
-        if (book.getChapters() != null && !book.getChapters().isEmpty()) {
-            chapterRepository.deleteAll(book.getChapters());
-            book.setChapters(new ArrayList<>());
+        if (chapterUnlockRepository.existsByChapter_Book_Id(bookId)) {
+            throw new AppException(ErrorCode.CANNOT_UPDATE_EPUB_PURCHASED_BOOK);
         }
 
+        if (book.getChapters() != null && !book.getChapters().isEmpty()) {
+            List<Chapter> chaptersToDelete = new ArrayList<>(book.getChapters());
+            book.getChapters().clear();
+            chapterRepository.deleteAll(chaptersToDelete);
+        }
+
+        String oldEpubPath = book.getStoragePath();
         String storedPath = epubStorageService.storeFile(file);
         book.setStoragePath(storedPath);
 
@@ -240,6 +265,10 @@ public class BookService {
             book = bookRepository.save(book);
 
             epubParserService.parseAndSaveChapters(book);
+
+            if (oldEpubPath != null) {
+                epubStorageService.deleteFile(oldEpubPath);
+            }
 
             return mapToBookResponse(book);
 

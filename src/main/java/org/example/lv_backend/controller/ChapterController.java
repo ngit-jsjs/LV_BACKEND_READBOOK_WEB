@@ -80,26 +80,16 @@ public class ChapterController {
                 .build();
     }
 
-    @PostMapping("/book/{bookId}")
-    @PreAuthorize("hasAnyAuthority('SCOPE_ADMIN')")
-    public ApiResponse<ChapterResponse> createChapter(
-            @PathVariable Long bookId,
-            @RequestBody @Valid ChapterCreationRequest request) {
-        return ApiResponse.<ChapterResponse>builder()
-                .result(chapterService.createChapter(bookId, request))
-                .build();
-    }
+//    @PostMapping("/book/{bookId}")
+//    @PreAuthorize("hasAnyAuthority('SCOPE_ADMIN')")
+//    public ApiResponse<ChapterResponse> createChapter(
+//            @PathVariable Long bookId,
+//            @RequestBody @Valid ChapterCreationRequest request) {
+//        return ApiResponse.<ChapterResponse>builder()
+//                .result(chapterService.createChapter(bookId, request))
+//                .build();
+//    }
 
-    @DeleteMapping("/book/{bookId}/batch")
-    @PreAuthorize("hasAnyAuthority('SCOPE_ADMIN')")
-    public ApiResponse<String> deleteSelectedChapters(
-            @PathVariable Long bookId,
-            @RequestBody List<Long> chapterIds) {
-        chapterService.deleteSelectedChapters(bookId, chapterIds);
-        return ApiResponse.<String>builder()
-                .result("Selected chapters have been deleted successfully")
-                .build();
-    }
 
     @DeleteMapping("/book/{bookId}/all")
     @PreAuthorize("hasAnyAuthority('SCOPE_ADMIN')")
