@@ -2,12 +2,20 @@ package org.example.lv_backend.service;
 
 import lombok.RequiredArgsConstructor;
 import org.example.lv_backend.configuration.VNPayConfig;
+import org.example.lv_backend.dto.response.PaymentResponse;
 import org.example.lv_backend.entity.*;
+import org.example.lv_backend.exception.AppException;
+import org.example.lv_backend.exception.ErrorCode;
+import org.example.lv_backend.mapper.PaymentMapper;
 import org.example.lv_backend.repository.PaymentRepository;
 import org.example.lv_backend.repository.PlanRepository;
 import org.example.lv_backend.repository.SubscriptionRepository;
 import org.example.lv_backend.repository.UserRepository;
+import org.example.lv_backend.util.SecurityUtil;
 import org.example.lv_backend.util.VNPayUtil;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,8 +34,18 @@ public class PaymentService {
     private final UserRepository userRepository;
     private final PlanRepository planRepository;
     private final SubscriptionRepository subscriptionRepository;
+    private final PaymentMapper paymentMapper;
+    private final SecurityUtil securityUtil;
     @Transactional
-    public String createPaymentUrl(Long planId, User user, String ipAddress) throws Exception {
+    public String createPaymentUrl(Long planId, String ipAddress) throws Exception {
+        String currentUsername = securityUtil.getCurrentUsername();
+        User user = userRepository.findByName(currentUsername)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+
+        if (!user.isVerified()) {
+            throw new AppException(ErrorCode.EMAIL_NOT_VERIFIED);
+        }
+
         Plan plan = planRepository.findById(planId)
                 .orElseThrow(() -> new RuntimeException("Gói xu không tồn tại"));
         String vnpTxnRef = UUID.randomUUID().toString().replace("-", "").substring(0, 20);
@@ -139,5 +157,23 @@ public class PaymentService {
         }
         paymentRepository.save(payment);
         return "00";
+    }
+
+    @Transactional(readOnly = true)
+    public Page<PaymentResponse> getMyPaymentHistory(int page, int size) {
+        String currentUsername = securityUtil.getCurrentUsername();
+        User user = userRepository.findByName(currentUsername)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+        Pageable pageable = PageRequest.of(page, size);
+        return paymentRepository.findByUserIdOrderByCreatedAtDesc(user.getId(), pageable)
+                .map(paymentMapper::toPaymentResponse);
+    }
+
+
+    @Transactional(readOnly = true)
+    public Page<PaymentResponse> getPaymentsByUserAdmin(Long userId, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        return paymentRepository.findByUserIdOrderByCreatedAtDesc(userId, pageable)
+                .map(paymentMapper::toPaymentResponse);
     }
 }

@@ -13,10 +13,7 @@ import org.mapstruct.MappingTarget;
 public interface ChapterMapper {
 
   
-    @Mapping(target = "book", ignore = true)
-    @Mapping(target = "isFree", ignore = true)
-    @Mapping(target = "price", ignore = true)
-    Chapter toChapter(ChapterCreationRequest request);
+
     @Mapping(target = "isLocked", source = "isLocked")
     ChapterResponse toChapterResponse(Chapter chapter, boolean isLocked);
 

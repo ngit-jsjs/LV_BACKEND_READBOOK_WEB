@@ -39,7 +39,7 @@ public class ReadingHistoryService {
         }
         if (history.getLastReadChapter() != null) {
             response.setLastChapterId(history.getLastReadChapter().getId());
-            response.setLastChapterNumber(Long.valueOf(history.getLastReadChapter().getChapterNumber()));
+            response.setLastChapterNumber(history.getLastReadChapter().getChapterNumber());
             response.setLastChapterTitle(history.getLastReadChapter().getTitle());
         }
         return response;
