@@ -4,6 +4,8 @@ import org.example.lv_backend.entity.Chapter;
 import org.example.lv_backend.entity.ChapterUnlock;
 import org.example.lv_backend.entity.ChapterUnlockId;
 import org.example.lv_backend.entity.User;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -22,4 +24,6 @@ public interface ChapterUnlockRepository extends JpaRepository<ChapterUnlock, Ch
 
     @Query(value = "SELECT COUNT(1) > 0 FROM chapter_unlocks cu JOIN chapters c ON cu.chapter_id = c.id WHERE c.book_id = :bookId", nativeQuery = true)
     boolean existsByChapter_Book_Id(@Param("bookId") Long bookId);
+
+    Page<ChapterUnlock> findByUserIdOrderByCreatedAtDesc(Long userId, Pageable pageable);
 }

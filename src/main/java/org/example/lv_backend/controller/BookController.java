@@ -12,6 +12,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.http.MediaType;
+import java.util.List;
 
 @Slf4j
 @RestController
@@ -66,11 +67,15 @@ public class BookController {
     @GetMapping("/search")
     public ApiResponse<Page<BookResponse>> searchBook(
             @RequestParam(required = false, defaultValue = "") String keyword,
+            @RequestParam(required = false) String author,
+            @RequestParam(required = false) String publisher,
+            @RequestParam(required = false) Long year,
+            @RequestParam(required = false) List<Long> categoryIds,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
 
         return ApiResponse.<Page<BookResponse>>builder()
-                .result(bookService.searchBook(keyword, page, size))
+                .result(bookService.searchBook(keyword, author, publisher, year, categoryIds, page, size))
                 .build();
     }
 

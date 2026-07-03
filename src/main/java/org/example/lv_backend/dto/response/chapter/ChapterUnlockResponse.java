@@ -6,16 +6,24 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ChapterResponse {
-    private Long id;
+public class ChapterUnlockResponse {
+    private Long userId;
+    private String userName;
+    private String userEmail;
+
+    private Long bookId;
+    private String bookTitle;
+
+    private Long chapterId;
     private Integer chapterNumber;
-    private String title;
-    private Boolean isFree;
+    private String chapterTitle;
+
     private BigDecimal price;
-    private Boolean isLocked;
+    private LocalDateTime createdAt;
 }

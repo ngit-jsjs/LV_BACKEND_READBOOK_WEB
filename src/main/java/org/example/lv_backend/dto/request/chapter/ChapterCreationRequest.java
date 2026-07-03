@@ -15,7 +15,7 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 public class ChapterCreationRequest {
     @NotNull(message = "CHAPTER_NUMBER_NULL")
-    private Long chapterNumber;
+    private Integer chapterNumber;
 
     @NotBlank(message = "TITLE_BLANK")
     private String title;

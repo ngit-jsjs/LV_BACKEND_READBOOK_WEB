@@ -35,8 +35,7 @@ public class User {
     @Builder.Default
     private BigDecimal amount = BigDecimal.ZERO;
 
-//sửa lại sau
-    @Column(nullable = false, columnDefinition = "boolean default false")
+    @Column(nullable = false)
     @Builder.Default
     private boolean verified = false;
 

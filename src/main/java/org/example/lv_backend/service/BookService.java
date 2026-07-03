@@ -16,10 +16,12 @@ import org.example.lv_backend.repository.ChapterRepository;
 import org.example.lv_backend.repository.ChapterUnlockRepository;
 import org.example.lv_backend.service.storage.EpubStorageService;
 import org.example.lv_backend.service.storage.ImageStorageService;
+import org.example.lv_backend.specification.BookSpecification;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -69,16 +71,26 @@ public class BookService {
 
 
 
-    public Page<BookResponse> searchBook(String keyword, int page, int size) {
+    public Page<BookResponse> searchBook(
+            String keyword,
+            String author,
+            String publisher,
+            Long year,
+            List<Long> categoryIds,
+            int page,
+            int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "id"));
-        String cleanKeyword = keyword != null ? keyword.trim() : "";
-
-        Page<Book> books = bookRepository.findByStatusAndKeyword(
+        
+        Specification<Book> spec = BookSpecification.filterBooks(
                 BookStatus.AVAILABLE,
-                cleanKeyword,
-                pageable
+                keyword,
+                author,
+                publisher,
+                year,
+                categoryIds
         );
 
+        Page<Book> books = bookRepository.findAll(spec, pageable);
         return books.map(this::mapToBookResponse);
     }
 

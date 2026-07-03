@@ -1,6 +1,7 @@
 package org.example.lv_backend.service;
 
 import lombok.RequiredArgsConstructor;
+import org.example.lv_backend.dto.response.chapter.ChapterUnlockResponse;
 import org.example.lv_backend.entity.Chapter;
 import org.example.lv_backend.entity.ChapterUnlock;
 import org.example.lv_backend.entity.User;
@@ -12,6 +13,9 @@ import org.example.lv_backend.repository.ChapterUnlockRepository;
 import org.example.lv_backend.repository.UserRepository;
 import org.example.lv_backend.util.SecurityUtil;
 import org.example.lv_backend.entity.BookStatus;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -62,5 +66,22 @@ public class ChapterUnlockService {
 
         ChapterUnlock chapterUnlock = chapterUnlockMapper.toChapterUnlock(user, chapter);
         chapterUnlockRepository.save(chapterUnlock);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<ChapterUnlockResponse> getMyUnlockHistory(int page, int size) {
+        String currentUsername = securityUtil.getCurrentUsername();
+        User user = userRepository.findByName(currentUsername)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+        Pageable pageable = PageRequest.of(page, size);
+        return chapterUnlockRepository.findByUserIdOrderByCreatedAtDesc(user.getId(), pageable)
+                .map(chapterUnlockMapper::toChapterUnlockResponse);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<ChapterUnlockResponse> getUnlocksByUserAdmin(Long userId, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        return chapterUnlockRepository.findByUserIdOrderByCreatedAtDesc(userId, pageable)
+                .map(chapterUnlockMapper::toChapterUnlockResponse);
     }
 }

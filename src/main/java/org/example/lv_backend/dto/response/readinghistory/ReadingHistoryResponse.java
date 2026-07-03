@@ -18,7 +18,7 @@ public class ReadingHistoryResponse {
     private Long bookId;
 
     private Long lastChapterId;
-    private Long lastChapterNumber;
+    private Integer lastChapterNumber;
     private String lastChapterTitle;
 
     private String bookTitle;
