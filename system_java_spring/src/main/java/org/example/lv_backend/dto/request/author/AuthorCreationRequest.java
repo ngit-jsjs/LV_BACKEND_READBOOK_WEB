@@ -1,18 +1,16 @@
-package org.example.lv_backend.dto.response.user;
+package org.example.lv_backend.dto.request.author;
 
+import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class SearchingUserResponse {
-    private Long id;
-
+@Data
+public class AuthorCreationRequest {
+    @NotBlank(message = "AUTHOR_NAME_BLANK")
     private String name;
-    private String email;
-    private boolean active;
 }

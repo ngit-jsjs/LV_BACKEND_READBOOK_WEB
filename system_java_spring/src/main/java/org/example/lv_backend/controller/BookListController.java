@@ -35,8 +35,15 @@ public class BookListController {
 
     @PreAuthorize("hasAnyAuthority('SCOPE_USER', 'SCOPE_ADMIN')")
     @GetMapping
-    public ApiResponse<List<BookListResponse>> getMyBookLists() {
-        return ApiResponse.<List<BookListResponse>>builder()
+    public ApiResponse<Object> getMyBookLists(
+            @RequestParam(required = false) Integer page,
+            @RequestParam(required = false) Integer size) {
+        if (page != null && size != null) {
+            return ApiResponse.<Object>builder()
+                    .result(bookListService.getMyBookLists(page, size))
+                    .build();
+        }
+        return ApiResponse.<Object>builder()
                 .result(bookListService.getMyBookLists())
                 .build();
     }

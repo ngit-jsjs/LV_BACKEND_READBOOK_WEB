@@ -39,7 +39,7 @@ public class RatingController {
                 .build();
     }
 
-    @PreAuthorize("hasAnyAuthority('SCOPE_USER', 'SCOPE_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('SCOPE_ADMIN')")
     @DeleteMapping("/{ratingId}")
     public ApiResponse<String> deleteRating(@PathVariable Long ratingId) {
         ratingService.deleteRating(ratingId);
@@ -56,6 +56,17 @@ public class RatingController {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
         return ApiResponse.<Page<RatingResponse>>builder()
                 .result(ratingService.getRatingsByBook(bookId, pageable))
+                .build();
+    }
+
+    @PreAuthorize("hasAnyAuthority('SCOPE_USER', 'SCOPE_ADMIN')")
+    @GetMapping("/my-ratings")
+    public ApiResponse<Page<RatingResponse>> getMyRatings(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+        return ApiResponse.<Page<RatingResponse>>builder()
+                .result(ratingService.getMyRatings(pageable))
                 .build();
     }
 }

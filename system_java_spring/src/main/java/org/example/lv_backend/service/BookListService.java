@@ -55,21 +55,21 @@ public class BookListService {
 
 
     private void verifyOwnership(BookList bookList) {
-        String currentUsername = securityUtil.getCurrentUsername();
-        if (bookList.getUser() == null || !currentUsername.equals(bookList.getUser().getName())) {
+        Long userId = securityUtil.getCurrentUserId();
+        if (bookList.getUser() == null || !userId.equals(bookList.getUser().getId())) {
             throw new AppException(ErrorCode.UNAUTHORIZED_BOOKLIST);
         }
     }
 
 
     public BookListResponse createBookList(BookListRequest request) {
-        String username = securityUtil.getCurrentUsername();
+        Long userId = securityUtil.getCurrentUserId();
         
-        if (bookListRepository.existsByNameAndUser_Name(request.getName(), username)) {
+        if (bookListRepository.existsByNameAndUser_Id(request.getName(), userId)) {
             throw new AppException(ErrorCode.BOOKLIST_EXISTED);
         }
 
-        User user = userRepository.findByName(username)
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
 
         BookList bookList = bookListMapper.toBookList(request);
@@ -82,10 +82,17 @@ public class BookListService {
 
 
     public List<BookListResponse> getMyBookLists() {
-        String username = securityUtil.getCurrentUsername();
-        return bookListRepository.findByUser_Name(username).stream()
+        Long userId = securityUtil.getCurrentUserId();
+        return bookListRepository.findByUser_Id(userId).stream()
                 .map(this::mapToBookListResponse)
                 .collect(Collectors.toList());
+    }
+ 
+    public Page<BookListResponse> getMyBookLists(int page, int size) {
+        Long userId = securityUtil.getCurrentUserId();
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "id"));
+        Page<BookList> bookListPage = bookListRepository.findByUser_Id(userId, pageable);
+        return bookListPage.map(this::mapToBookListResponse);
     }
 
 
@@ -103,9 +110,9 @@ public class BookListService {
                 .orElseThrow(() -> new AppException(ErrorCode.BOOKLIST_NOT_EXISTED));
         verifyOwnership(bookList);
 
-        String username = securityUtil.getCurrentUsername();
+        Long userId = securityUtil.getCurrentUserId();
         
-        if (bookListRepository.existsByNameAndIdNotAndUser_Name(request.getName(), id, username)) {
+        if (bookListRepository.existsByNameAndIdNotAndUser_Id(request.getName(), id, userId)) {
             throw new AppException(ErrorCode.BOOKLIST_EXISTED);
         }
 

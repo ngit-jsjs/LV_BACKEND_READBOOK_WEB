@@ -10,9 +10,11 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ReadingHistoryRequest {
-    @NotNull(message = "bookId không được để trống")
+    @NotNull(message = "BOOK_ID_NULL")
     private Long bookId;
 
-    @NotNull(message = "chapterId không được để trống")
+    @NotNull(message = "CHAPTER_ID_NULL")
     private Long chapterId;
+
+    private Boolean isCompleted;
 }

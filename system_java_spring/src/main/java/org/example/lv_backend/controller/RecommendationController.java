@@ -25,18 +25,15 @@ import java.util.List;
 public class RecommendationController {
 
     private final RecommendationService recommendationService;
-    private final UserRepository userRepository;
     private final SecurityUtil securityUtil;
 
 
     @PreAuthorize("hasAnyAuthority('SCOPE_ADMIN', 'SCOPE_USER')")
     @GetMapping
     public ApiResponse<List<BookResponse>> getRecommendations() {
-        String username = securityUtil.getCurrentUsername();
-        User user = userRepository.findByName(username)
-                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+        Long userId = securityUtil.getCurrentUserId();
 
-        List<BookResponse> responses = recommendationService.getRecommendationsForUser(user.getId());
+        List<BookResponse> responses = recommendationService.getRecommendationsForUser(userId);
         
         return ApiResponse.<List<BookResponse>>builder()
                 .result(responses)

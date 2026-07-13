@@ -16,6 +16,7 @@ import org.example.lv_backend.util.VNPayUtil;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -38,8 +39,8 @@ public class PaymentService {
     private final SecurityUtil securityUtil;
     @Transactional
     public String createPaymentUrl(Long planId, String ipAddress) throws Exception {
-        String currentUsername = securityUtil.getCurrentUsername();
-        User user = userRepository.findByName(currentUsername)
+        Long userId = securityUtil.getCurrentUserId();
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
 
         if (!user.isVerified()) {
@@ -161,11 +162,9 @@ public class PaymentService {
 
     @Transactional(readOnly = true)
     public Page<PaymentResponse> getMyPaymentHistory(int page, int size) {
-        String currentUsername = securityUtil.getCurrentUsername();
-        User user = userRepository.findByName(currentUsername)
-                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
-        Pageable pageable = PageRequest.of(page, size);
-        return paymentRepository.findByUserIdOrderByCreatedAtDesc(user.getId(), pageable)
+        Long userId = securityUtil.getCurrentUserId();
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+        return paymentRepository.findByUserIdOrderByCreatedAtDesc(userId, pageable)
                 .map(paymentMapper::toPaymentResponse);
     }
 

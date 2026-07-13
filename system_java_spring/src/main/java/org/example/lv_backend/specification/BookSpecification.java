@@ -1,10 +1,13 @@
 package org.example.lv_backend.specification;
 
 import jakarta.persistence.criteria.Join;
+import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Predicate;
+import org.example.lv_backend.entity.Author;
 import org.example.lv_backend.entity.Book;
 import org.example.lv_backend.entity.BookStatus;
 import org.example.lv_backend.entity.Category;
+import org.example.lv_backend.entity.Publisher;
 import org.springframework.data.jpa.domain.Specification;
 
 import java.util.ArrayList;
@@ -18,7 +21,8 @@ public class BookSpecification {
             String author,
             String publisher,
             Long year,
-            List<Long> categoryIds) {
+            List<Long> categoryIds,
+            Long userId) {
 
         return (root, query, criteriaBuilder) -> {
             List<Predicate> predicates = new ArrayList<>();
@@ -28,24 +32,32 @@ public class BookSpecification {
                 predicates.add(criteriaBuilder.equal(root.get("status"), status));
             }
 
+            // 1.1 Lọc theo userId (được truyền từ Admin uploads)
+            if (userId != null) {
+                predicates.add(criteriaBuilder.equal(root.get("user").get("id"), userId));
+            }
+
             // 2. Tìm theo từ khóa chung (Tìm theo Tiêu đề HOẶC Tác giả)
             if (keyword != null && !keyword.trim().isEmpty()) {
                 String pattern = "%" + keyword.trim().toLowerCase() + "%";
                 Predicate titlePredicate = criteriaBuilder.like(criteriaBuilder.lower(root.get("title")), pattern);
-                Predicate authorPredicate = criteriaBuilder.like(criteriaBuilder.lower(root.get("author")), pattern);
+                Join<Book, Author> authorJoin = root.join("author", JoinType.LEFT);
+                Predicate authorPredicate = criteriaBuilder.like(criteriaBuilder.lower(authorJoin.get("name")), pattern);
                 predicates.add(criteriaBuilder.or(titlePredicate, authorPredicate));
             }
 
             // 3. Lọc theo tên Tác giả cụ thể
             if (author != null && !author.trim().isEmpty()) {
                 String pattern = "%" + author.trim().toLowerCase() + "%";
-                predicates.add(criteriaBuilder.like(criteriaBuilder.lower(root.get("author")), pattern));
+                Join<Book, Author> authorJoin = root.join("author", JoinType.LEFT);
+                predicates.add(criteriaBuilder.like(criteriaBuilder.lower(authorJoin.get("name")), pattern));
             }
 
             // 4. Lọc theo tên Nhà xuất bản cụ thể
             if (publisher != null && !publisher.trim().isEmpty()) {
                 String pattern = "%" + publisher.trim().toLowerCase() + "%";
-                predicates.add(criteriaBuilder.like(criteriaBuilder.lower(root.get("publisher")), pattern));
+                Join<Book, Publisher> publisherJoin = root.join("publisher", JoinType.LEFT);
+                predicates.add(criteriaBuilder.like(criteriaBuilder.lower(publisherJoin.get("name")), pattern));
             }
 
             // 5. Lọc theo đúng năm xuất bản

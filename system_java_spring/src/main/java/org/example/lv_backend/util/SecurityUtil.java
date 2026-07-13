@@ -23,5 +23,14 @@ public class SecurityUtil {
                 .getName();
     }
 
+    public Long getCurrentUserId() {
+        String name = getCurrentUsername();
+        try {
+            return Long.parseLong(name);
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
 
 }

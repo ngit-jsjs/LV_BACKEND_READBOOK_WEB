@@ -27,12 +27,12 @@ public class EpubStorageService {
     private String epubDir;
     private void validateEpubFile(MultipartFile file) {
         if (file == null || file.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "File rỗng");
+            throw new AppException(ErrorCode.EPUB_FILE_EMPTY);
         }
 //error code
         String name = file.getOriginalFilename();
         if (name == null || !name.toLowerCase().endsWith(".epub")) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Chỉ chấp nhận file .epub");
+            throw new AppException(ErrorCode.EPUB_FILE_INVALID_FORMAT);
         }
         //error code
     }
@@ -43,7 +43,7 @@ public class EpubStorageService {
         try {
             Files.createDirectories(storageDir);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new AppException(ErrorCode.FILE_UPLOAD_FAILED);
         }
         String storedFilename = UUID.randomUUID() + ".epub";
         Path storedPath = storageDir.resolve(storedFilename);
@@ -52,7 +52,7 @@ public class EpubStorageService {
             Files.copy(inputStream, storedPath, StandardCopyOption.REPLACE_EXISTING);
         }
         catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new AppException(ErrorCode.FILE_UPLOAD_FAILED);
         }
         return storedPath.toAbsolutePath().toString();
     }

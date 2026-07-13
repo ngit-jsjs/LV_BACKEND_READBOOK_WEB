@@ -11,7 +11,7 @@ import java.util.Optional;
 @Repository
 public interface ReadingHistoryRepository extends JpaRepository<ReadingHistory, Long> {
 
-    Optional<ReadingHistory> findByUser_NameAndBook_Id(String username, Long bookId);
+    Optional<ReadingHistory> findByUser_IdAndBook_Id(Long userId, Long bookId);
 
-    Page<ReadingHistory> findByUser_Name(String username, Pageable pageable);
+    Page<ReadingHistory> findByUser_Id(Long userId, Pageable pageable);
 }

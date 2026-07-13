@@ -34,7 +34,7 @@ public class ReadingHistoryService {
         ReadingHistoryResponse response = readingHistoryMapper.toReadingHistoryResponse(history);
         if (history.getBook() != null) {
             response.setBookTitle(history.getBook().getTitle());
-            response.setBookAuthor(history.getBook().getAuthor());
+            response.setBookAuthor(history.getBook().getAuthor().getName());
             response.setCoverImageUrl(history.getBook().getCoverImageUrl());
         }
         if (history.getLastReadChapter() != null) {
@@ -42,13 +42,14 @@ public class ReadingHistoryService {
             response.setLastChapterNumber(history.getLastReadChapter().getChapterNumber());
             response.setLastChapterTitle(history.getLastReadChapter().getTitle());
         }
+        response.setIsCompleted(history.getIsCompleted());
         return response;
     }
 
 
 
     public ReadingHistoryResponse saveOrUpdate(ReadingHistoryRequest request) {
-        String username = securityUtil.getCurrentUsername();
+        Long userId = securityUtil.getCurrentUserId();
 
         Book book = bookRepository.findById(request.getBookId())
                 .orElseThrow(() -> new AppException(ErrorCode.BOOK_NOT_EXISTED));
@@ -57,9 +58,9 @@ public class ReadingHistoryService {
                 .orElseThrow(() -> new AppException(ErrorCode.CHAPTER_NOT_EXISTED));
 
         ReadingHistory history = readingHistoryRepository
-                .findByUser_NameAndBook_Id(username, request.getBookId())
+                .findByUser_IdAndBook_Id(userId, request.getBookId())
                 .orElseGet(() -> {
-                    User user = userRepository.findByName(username)
+                    User user = userRepository.findById(userId)
                             .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
                     return ReadingHistory.builder()
                             .user(user)
@@ -69,15 +70,26 @@ public class ReadingHistoryService {
 
         history.setLastReadChapter(chapter);
 
+        if (Boolean.TRUE.equals(request.getIsCompleted())) {
+            history.setIsCompleted(true);
+        } else {
+            chapterRepository.findTopByBookIdOrderByChapterNumberDesc(book.getId())
+                    .ifPresent(lastChap -> {
+                        if (lastChap.getId().equals(chapter.getId())) {
+                            history.setIsCompleted(true);
+                        }
+                    });
+        }
+
         return mapToResponse(readingHistoryRepository.save(history));
     }
 
 
     public Page<ReadingHistoryResponse> getMyReadingHistory(int page, int size) {
-        String username = securityUtil.getCurrentUsername();
+        Long userId = securityUtil.getCurrentUserId();
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "updatedAt").and(Sort.by(Sort.Direction.DESC, "id")));
 
-        Page<ReadingHistory> historyPage = readingHistoryRepository.findByUser_Name(username, pageable);
+        Page<ReadingHistory> historyPage = readingHistoryRepository.findByUser_Id(userId, pageable);
         return historyPage.map(this::mapToResponse);
     }
 }

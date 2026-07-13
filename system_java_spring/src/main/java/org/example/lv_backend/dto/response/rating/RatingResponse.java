@@ -14,4 +14,8 @@ public class RatingResponse {
     private LocalDateTime createdAt;
     private String userName;
     private Long userId;
+    private Long bookId;
+    private String bookTitle;
+    private String bookAuthor;
+    private String coverImageUrl;
 }

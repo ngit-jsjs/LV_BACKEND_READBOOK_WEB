@@ -14,6 +14,8 @@ import org.example.lv_backend.repository.CategoryRepository;
 import org.example.lv_backend.repository.UserRepository;
 import org.example.lv_backend.repository.ChapterRepository;
 import org.example.lv_backend.repository.ChapterUnlockRepository;
+import org.example.lv_backend.repository.AuthorRepository;
+import org.example.lv_backend.repository.PublisherRepository;
 import org.example.lv_backend.service.storage.EpubStorageService;
 import org.example.lv_backend.service.storage.ImageStorageService;
 import org.example.lv_backend.specification.BookSpecification;
@@ -44,6 +46,8 @@ public class BookService {
     private final EpubParserService epubParserService;
     private final ChapterRepository chapterRepository;
     private final ChapterUnlockRepository chapterUnlockRepository;
+    private final AuthorRepository authorRepository;
+    private final PublisherRepository publisherRepository;
 
     private BookResponse mapToBookResponse(Book book) {
         BookResponse response = bookMapper.toBookResponse(book);
@@ -57,16 +61,64 @@ public class BookService {
         return response;
     }
 
+    private Author resolveAuthor(Long authorId, String authorName) {
+        if (authorId != null) {
+            return authorRepository.findById(authorId)
+                    .orElseThrow(() -> new AppException(ErrorCode.AUTHOR_NOT_EXISTED));
+        }
+        if (authorName != null && !authorName.trim().isEmpty()) {
+            return authorRepository.findByName(authorName.trim())
+                    .orElseGet(() -> authorRepository.save(
+                            Author.builder()
+                                    .name(authorName.trim())
+                                    .build()
+                    ));
+        }
+        return null;
+    }
+
+    private Publisher resolvePublisher(Long publisherId, String publisherName) {
+        if (publisherId != null) {
+            return publisherRepository.findById(publisherId)
+                    .orElseThrow(() -> new AppException(ErrorCode.PUBLISHER_NOT_EXISTED));
+        }
+        if (publisherName != null && !publisherName.trim().isEmpty()) {
+            return publisherRepository.findByName(publisherName.trim())
+                    .orElseGet(() -> publisherRepository.save(
+                            Publisher.builder()
+                                    .name(publisherName.trim())
+                                    .build()
+                    ));
+        }
+        return null;
+    }
 
 
-    public Page<BookResponse> getMyUploadBook(String keyword, int page, int size){
-        String name = securityUtil.getCurrentUsername();
+
+    public Page<BookResponse> getMyUploadBook(
+            BookStatus status,
+            String keyword,
+            String author,
+            String publisher,
+            Long year,
+            List<Long> categoryIds,
+            int page,
+            int size){
+        Long userId = securityUtil.getCurrentUserId();
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "id"));
 
-        Page<Book> bookList=bookRepository.findByKeyword(name, keyword.trim(), pageable);
+        Specification<Book> spec = BookSpecification.filterBooks(
+                status,
+                keyword,
+                author,
+                publisher,
+                year,
+                categoryIds,
+                userId
+        );
 
-        Page<BookResponse> response = bookList.map(this::mapToBookResponse);
-        return response;
+        Page<Book> bookList = bookRepository.findAll(spec, pageable);
+        return bookList.map(this::mapToBookResponse);
     }
 
 
@@ -87,7 +139,8 @@ public class BookService {
                 author,
                 publisher,
                 year,
-                categoryIds
+                categoryIds,
+                null
         );
 
         Page<Book> books = bookRepository.findAll(spec, pageable);
@@ -122,7 +175,16 @@ public class BookService {
                 request.setCoverImageUrl(imageUrl);
             }
             Book book = bookMapper.toBook(request);
+            book.setAuthor(resolveAuthor(request.getAuthorId(), request.getAuthor()));
+            book.setPublisher(resolvePublisher(request.getPublisherId(), request.getPublisher()));
             book.setCategories(categories);
+
+            Long userId = securityUtil.getCurrentUserId();
+            if (userId != null) {
+                User user = userRepository.findById(userId)
+                        .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+                book.setUser(user);
+            }
 
             book = bookRepository.save(book);
 
@@ -164,6 +226,8 @@ public class BookService {
         String newImageUrl=null;
         try {
             bookMapper.updateBook(book, request);
+            book.setAuthor(resolveAuthor(request.getAuthorId(), request.getAuthor()));
+            book.setPublisher(resolvePublisher(request.getPublisherId(), request.getPublisher()));
             if (file != null && !file.isEmpty()) {
                 newImageUrl = imageStorageService.storeFile(file);
                 book.setCoverImageUrl(newImageUrl);
@@ -206,28 +270,8 @@ public class BookService {
             throw new AppException(ErrorCode.CANNOT_HIDE_OR_DELETE_PURCHASED_BOOK);
         }
 
-        for (BookList bookList : book.getBookLists()) {
-            bookList.getBooks().remove(book);
-        }
-
-        if (book.getChapters() != null && !book.getChapters().isEmpty()) {
-            List<Chapter> chaptersToDelete = new ArrayList<>(book.getChapters());
-            book.getChapters().clear();
-            chapterRepository.deleteAll(chaptersToDelete);
-        }
-
-        String coverImageUrl = book.getCoverImageUrl();
-        String epubStoragePath = book.getStoragePath();
-
-        bookRepository.delete(book);
-
-        if (coverImageUrl != null) {
-            imageStorageService.deleteFile(coverImageUrl);
-        }
-
-        if (epubStoragePath != null) {
-            epubStorageService.deleteFile(epubStoragePath);
-        }
+        book.setStatus(BookStatus.UNAVAILABLE);
+        bookRepository.save(book);
     }
 
 
@@ -247,13 +291,20 @@ public class BookService {
                 .map(this::mapToBookResponse);
     }
 
+    public Page<BookResponse> getUnratedFinishedBooks(int page, int size) {
+        Long userId = securityUtil.getCurrentUserId();
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "id"));
+        Page<Book> books = bookRepository.findUnratedFinishedBooks(userId, pageable);
+        return books.map(this::mapToBookResponse);
+    }
+
 
 
 
     @Transactional
     public BookResponse importEpub(Long bookId, MultipartFile file) {
         if (file == null || file.isEmpty()) {
-            throw new RuntimeException("Không có file Epub");
+            throw new AppException(ErrorCode.EPUB_FILE_MISSING);
         }
 
         Book book = bookRepository.findById(bookId)
@@ -286,7 +337,7 @@ public class BookService {
 
         } catch (Exception e) {
             epubStorageService.deleteFile(storedPath);
-            throw new RuntimeException("Import EPUB thất bại", e);
+            throw new AppException(ErrorCode.EPUB_IMPORT_FAILED);
         }
     }
 

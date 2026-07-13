@@ -26,4 +26,6 @@ public class ReadingHistoryResponse {
     private String coverImageUrl;
 
     private LocalDateTime updatedAt;
+
+    private Boolean isCompleted;
 }

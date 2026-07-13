@@ -23,7 +23,7 @@ public interface BookRepository extends JpaRepository<Book,Long>, JpaSpecificati
 
     Boolean existsByTitle (String title);
 
-    @Query("SELECT b FROM Book b WHERE b.status = :status AND (LOWER(b.title) LIKE LOWER(CONCAT('%', :keyword, '%')) OR LOWER(b.author) LIKE LOWER(CONCAT('%', :keyword, '%')))")
+    @Query("SELECT b FROM Book b LEFT JOIN b.author a WHERE b.status = :status AND (LOWER(b.title) LIKE LOWER(CONCAT('%', :keyword, '%')) OR LOWER(a.name) LIKE LOWER(CONCAT('%', :keyword, '%')))")
     Page<Book> findByStatusAndKeyword(@Param("status") BookStatus status, @Param("keyword") String keyword, Pageable pageable);
 
     boolean existsByTitleAndIdNot(String title, Long id);
@@ -32,6 +32,21 @@ public interface BookRepository extends JpaRepository<Book,Long>, JpaSpecificati
     Page<Book> findByStatus(BookStatus bookStatus, Pageable pageable);
     Page<Book> findByBookLists_Id(Long bookListId, Pageable pageable);
 
-    @Query("SELECT b FROM Book b WHERE b.user.name = :name AND (LOWER(b.title) LIKE LOWER(CONCAT('%', :keyword, '%')) OR LOWER(b.author) LIKE LOWER(CONCAT('%', :keyword, '%')))")
-    Page<Book> findByKeyword(@Param("name") String name, @Param("keyword") String keyword, Pageable pageable);
+    @Query("SELECT b FROM Book b LEFT JOIN b.author a WHERE b.user.id = :userId AND (LOWER(b.title) LIKE LOWER(CONCAT('%', :keyword, '%')) OR LOWER(a.name) LIKE LOWER(CONCAT('%', :keyword, '%')))")
+    Page<Book> findByKeyword(@Param("userId") Long userId, @Param("keyword") String keyword, Pageable pageable);
+
+    @Query("SELECT b FROM Book b " +
+           "JOIN ReadingHistory rh ON b.id = rh.book.id " +
+           "WHERE rh.user.id = :userId " +
+           "AND rh.isCompleted = true " +
+           "AND NOT EXISTS (SELECT 1 FROM Rating r WHERE r.book.id = b.id AND r.user.id = :userId)")
+    Page<Book> findUnratedFinishedBooks(@Param("userId") Long userId, Pageable pageable);
+
+    @Query("SELECT b FROM Book b " +
+           "LEFT JOIN b.readingHistories rh " +
+           "WHERE b.status = :status " +
+           "GROUP BY b.id " +
+           "ORDER BY COUNT(rh) DESC")
+    Page<Book> findMostReadBooks(@Param("status") BookStatus status, Pageable pageable);
 }
+

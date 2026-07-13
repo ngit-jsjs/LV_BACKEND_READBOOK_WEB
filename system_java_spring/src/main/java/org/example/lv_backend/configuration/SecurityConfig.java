@@ -31,7 +31,7 @@ public class SecurityConfig {
     };
     private final String[] GET_PUBLIC_ENDPOINTS = {"/user/search", "/user/{userId:[0-9]+}", "/uploads/**",
             "/books", "/books/search", "/books/*", "/chapters/**", "/categories", "/categories/**",
-            "/api/payment/vnpay-return","/api/payment/vnpay-ipn","/api/plans"};
+            "/api/payment/vnpay-return","/api/payment/vnpay-ipn","/api/plans", "/ratings/book/**"};
 
 
     @Autowired
