@@ -1,18 +1,15 @@
-package org.example.lv_backend.dto.response.user;
+package org.example.lv_backend.dto.response.publisher;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class SearchingUserResponse {
+@Data
+public class PublisherResponse {
     private Long id;
-
     private String name;
-    private String email;
-    private boolean active;
 }

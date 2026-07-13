@@ -1,6 +1,7 @@
 package org.example.lv_backend.controller;
 
 import com.nimbusds.jose.JOSEException;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.example.lv_backend.dto.request.auth.AuthenticationRequest;
 import org.example.lv_backend.dto.request.auth.IntrospectRequest;
@@ -62,7 +63,7 @@ public class AuthenticationController {
     }
 
     @PostMapping("/reset-password")
-    public ApiResponse<String> resetPassword(@RequestBody ResetPasswordRequest request) {
+    public ApiResponse<String> resetPassword(@RequestBody @Valid ResetPasswordRequest request) {
         return authenticationService.resetPassword(request);
     }
 }

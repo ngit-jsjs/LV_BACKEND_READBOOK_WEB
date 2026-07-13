@@ -20,6 +20,7 @@ public class UserResponse {
     private Set<RoleName> roles;
     private BigDecimal amount;
     private boolean verified;
+    private boolean active;
 //    private List<PublishedBookResponse> publishedBooks;
 //    private List<FavoriteBookResponse> favortiteBook;
 }

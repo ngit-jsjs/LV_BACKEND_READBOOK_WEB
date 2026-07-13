@@ -9,6 +9,7 @@ import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
+import org.springframework.security.oauth2.jwt.JwtException;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.spec.SecretKeySpec;
@@ -32,7 +33,7 @@ public class CustomJwtDecoder implements JwtDecoder {
                     IntrospectRequest.builder().token(token).build()
             );
         } catch (JOSEException|ParseException e) {
-            throw new RuntimeException(e.getMessage() );
+            throw new JwtException(e.getMessage());
     }
         if(Objects.isNull(nimbusJwtDecoder )){
             SecretKeySpec secretKeySpec = new SecretKeySpec(signerKey.getBytes(),"HS512");

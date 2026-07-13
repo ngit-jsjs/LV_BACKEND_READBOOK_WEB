@@ -18,6 +18,7 @@ public class BookResponse {
     private Long id;
     private String title;
     private String author;
+    private Long authorId;
     private String coverImageUrl;
 //    private String slug;
     private BookStatus status;
@@ -25,6 +26,7 @@ public class BookResponse {
     private BigDecimal averageRating;
     private String description;
     private String publisher;
+    private Long publisherId;
     private Long year;
     private Set<String> categories;
     private String uploaderName; 

@@ -37,8 +37,9 @@ public class ChapterUnlockService {
         if (auth == null || !auth.isAuthenticated()) {
             throw new AppException(ErrorCode.UNAUTHENTICATED);
         }
-        String currentUsername = auth.getName();
-        User user = userRepository.findByName(currentUsername)
+        String currentUserIdStr = auth.getName();
+        Long userId = Long.parseLong(currentUserIdStr);
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
 
         Chapter chapter = chapterRepository.findById(chapterId)
@@ -70,11 +71,9 @@ public class ChapterUnlockService {
 
     @Transactional(readOnly = true)
     public Page<ChapterUnlockResponse> getMyUnlockHistory(int page, int size) {
-        String currentUsername = securityUtil.getCurrentUsername();
-        User user = userRepository.findByName(currentUsername)
-                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+        Long userId = securityUtil.getCurrentUserId();
         Pageable pageable = PageRequest.of(page, size);
-        return chapterUnlockRepository.findByUserIdOrderByCreatedAtDesc(user.getId(), pageable)
+        return chapterUnlockRepository.findByUserIdOrderByCreatedAtDesc(userId, pageable)
                 .map(chapterUnlockMapper::toChapterUnlockResponse);
     }
 

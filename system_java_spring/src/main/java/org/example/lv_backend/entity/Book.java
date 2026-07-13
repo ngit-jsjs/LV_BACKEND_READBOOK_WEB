@@ -25,21 +25,22 @@ public class Book {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "TEXT")
     private String title;
+    
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "author_id")
+    private Author author;
 
-    private String author;
-
-    private String publisher;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "publisher_id")
+    private Publisher publisher;
 
     private String coverImageUrl;
 
     private Long year;
 
     private String storagePath;
-
-    @Column(unique = true)
-    private String slug;
 
     @Column(columnDefinition = "TEXT")
     private String description;

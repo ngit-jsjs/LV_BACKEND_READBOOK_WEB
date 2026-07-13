@@ -6,9 +6,15 @@ import org.example.lv_backend.dto.response.book.BookResponse;
 import org.example.lv_backend.entity.Book;
 import org.example.lv_backend.entity.Category;
 import org.example.lv_backend.entity.Recommendation;
+import org.example.lv_backend.exception.AppException;
+import org.example.lv_backend.exception.ErrorCode;
 import org.example.lv_backend.mapper.BookMapper;
+import org.example.lv_backend.entity.BookStatus;
+import org.example.lv_backend.repository.BookRepository;
 import org.example.lv_backend.repository.RecommendationRepository;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -24,6 +30,7 @@ import java.util.stream.Collectors;
 public class RecommendationService {
 
     private final RecommendationRepository recommendationRepository;
+    private final BookRepository bookRepository;
     private final BookMapper bookMapper;
     private final RestTemplate restTemplate = new RestTemplate();
 
@@ -35,6 +42,17 @@ public class RecommendationService {
         log.info("Fetching recommendations for user id: {}", userId);
         List<Recommendation> recommendations = recommendationRepository.findByUserIdOrderByScoreDesc(userId);
         
+        if (recommendations.isEmpty()) {
+            log.info("No recommendations found for user id: {}. Falling back to top 15 most read books.", userId);
+            Page<Book> mostReadBooks = bookRepository.findMostReadBooks(
+                    BookStatus.AVAILABLE,
+                    PageRequest.of(0, 15)
+            );
+            return mostReadBooks.getContent().stream()
+                    .map(this::mapToBookResponse)
+                    .collect(Collectors.toList());
+        }
+        
         Collections.shuffle(recommendations);
         
         return recommendations.stream()
@@ -45,13 +63,14 @@ public class RecommendationService {
     }
 
 
+
     public String triggerRecommenderCalculation() {
         try {
             log.info("Triggering recommender computation at: {}", recommenderUrl);
             String response = restTemplate.postForObject(recommenderUrl, null, String.class);
             return "Successfully updated recommendations!";
         } catch (Exception e) {
-            throw new RuntimeException("Recommender system calculation failed: " + e.getMessage());
+            throw new AppException(ErrorCode.RECOMMENDER_TRAIN_FAILED);
         }
     }
 

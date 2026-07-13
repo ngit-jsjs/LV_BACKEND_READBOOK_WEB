@@ -92,9 +92,10 @@ public class UserService {
 
     public UserResponse getMyInfo(){
         var context= SecurityContextHolder.getContext();
-        String name=context.getAuthentication().getName();
+        String userIdStr=context.getAuthentication().getName();
+        Long userId = Long.parseLong(userIdStr);
 
-        User user=userRepository.findByName(name).orElseThrow(
+        User user=userRepository.findById(userId).orElseThrow(
                 () -> new AppException(ErrorCode.USER_NOT_EXISTED)
         );
 
@@ -128,15 +129,8 @@ public class UserService {
                 () -> new AppException(ErrorCode.USER_NOT_EXISTED)
         );
 
-        if (user.getBooks() != null) {
-            for (Book book : user.getBooks()) {
-                if (book.getCoverImageUrl() != null) {
-                    imageStorageService.deleteFile(book.getCoverImageUrl());
-                }
-            }
-        }
-
-        userRepository.delete(user);
+        user.setActive(!user.isActive());
+        userRepository.save(user);
     }
 
 

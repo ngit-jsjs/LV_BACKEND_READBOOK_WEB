@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 import java.math.BigDecimal;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 @AllArgsConstructor
@@ -25,7 +26,7 @@ public class UserCreationRequest {
     private String name;
 
     @NotBlank(message = "PASSWORD_BLANK")
-    @Size(min = 6, message = "PASSWORD_INVALID")
+    @Pattern(regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*(),.?\\\":{}|<>]).{8,}$", message = "PASSWORD_INVALID")
     private String password;
 
 }

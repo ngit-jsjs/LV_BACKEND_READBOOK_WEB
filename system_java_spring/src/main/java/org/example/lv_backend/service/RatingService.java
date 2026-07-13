@@ -33,8 +33,8 @@ public class RatingService {
 
     @Transactional
     public RatingResponse createRating(Long bookId, RatingRequest request) {
-        String username = securityUtil.getCurrentUsername();
-        User user = userRepository.findByName(username)
+        Long userId = securityUtil.getCurrentUserId();
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
 
         Book book = bookRepository.findById(bookId)
@@ -75,7 +75,9 @@ public class RatingService {
         Rating rating = ratingRepository.findById(ratingId)
                 .orElseThrow(() -> new RuntimeException("Đánh giá không tồn tại"));
 //chưa bỏ error code
-        verifyRatingOwner(rating);
+        if (!securityUtil.isAdmin()) {
+            throw new AppException(ErrorCode.UNAUTHORIZED);
+        }
 
         Book book = rating.getBook();
         ratingRepository.delete(rating);
@@ -91,10 +93,16 @@ public class RatingService {
         return ratings.map(ratingMapper::toRatingResponse);
     }
 
+    public Page<RatingResponse> getMyRatings(Pageable pageable) {
+        Long userId = securityUtil.getCurrentUserId();
+        Page<Rating> ratings = ratingRepository.findByUserId(userId, pageable);
+        return ratings.map(ratingMapper::toRatingResponse);
+    }
+
     private void verifyRatingOwner(Rating rating) {
-        String username = securityUtil.getCurrentUsername();
+        Long userId = securityUtil.getCurrentUserId();
         boolean isAdmin = securityUtil.isAdmin();
-        if (!isAdmin && (rating.getUser() == null || !username.equals(rating.getUser().getName()))) {
+        if (!isAdmin && (rating.getUser() == null || !userId.equals(rating.getUser().getId()))) {
             throw new AppException(ErrorCode.UNAUTHORIZED);
         }
     }

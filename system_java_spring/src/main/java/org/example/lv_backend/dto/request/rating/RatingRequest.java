@@ -11,11 +11,10 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 public class RatingRequest {
-    @NotNull(message = "Điểm đánh giá không được để trống")
-    @Min(value = 1, message = "Điểm đánh giá thấp nhất là 1")
-    @Max(value = 5, message = "Điểm đánh giá cao nhất là 5")
+    @NotNull(message = "RATING_NULL")
+    @Min(value = 1, message = "RATING_MIN")
+    @Max(value = 5, message = "RATING_MAX")
     private Long ratings;
 
-    @NotBlank(message = "Nội dung bình luận không được để trống")
     private String comment;
 }

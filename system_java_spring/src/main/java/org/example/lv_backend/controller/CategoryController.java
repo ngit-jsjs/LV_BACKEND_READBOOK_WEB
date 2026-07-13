@@ -7,6 +7,7 @@ import org.example.lv_backend.dto.request.category.CategoryCreationRequest;
 import org.example.lv_backend.dto.response.ApiResponse;
 import org.example.lv_backend.dto.response.category.CategoryResponse;
 import org.example.lv_backend.service.CategoryService;
+import org.springframework.data.domain.Page;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -29,9 +30,28 @@ public class CategoryController {
     }
 
     @GetMapping
-    public ApiResponse<List<CategoryResponse>> getAllCategories() {
+    public ApiResponse<Page<CategoryResponse>> getAllCategories(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        return ApiResponse.<Page<CategoryResponse>>builder()
+                .result(categoryService.getAllCategories(page, size))
+                .build();
+    }
+
+    @GetMapping("/list")
+    public ApiResponse<List<CategoryResponse>> getAllCategoriesList() {
         return ApiResponse.<List<CategoryResponse>>builder()
-                .result(categoryService.getAllCategories())
+                .result(categoryService.getAllCategoriesList())
+                .build();
+    }
+
+    @GetMapping("/search")
+    public ApiResponse<Page<CategoryResponse>> searchCategory(
+            @RequestParam(required = false, defaultValue = "") String keyword,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        return ApiResponse.<Page<CategoryResponse>>builder()
+                .result(categoryService.searchCategories(keyword, page, size))
                 .build();
     }
 
@@ -52,12 +72,4 @@ public class CategoryController {
                 .build();
     }
 
-    @PreAuthorize("hasAnyAuthority('SCOPE_ADMIN')")
-    @DeleteMapping("/{id}")
-    public ApiResponse<String> deleteCategory(@PathVariable Long id) {
-        categoryService.deleteCategory(id);
-        return ApiResponse.<String>builder()
-                .result("Category has been deleted successfully")
-                .build();
-    }
 }

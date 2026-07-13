@@ -19,12 +19,20 @@ public interface BookMapper {
     @Mapping(target = "userId", source = "user.id")
     @Mapping(source = "user.name", target = "uploaderName")
     @Mapping(target = "categories", ignore = true)
+    @Mapping(target = "author", source = "author.name")
+    @Mapping(target = "authorId", source = "author.id")
+    @Mapping(target = "publisher", source = "publisher.name")
+    @Mapping(target = "publisherId", source = "publisher.id")
     BookResponse toBookResponse(Book book);
 
     @Mapping(target = "categories", ignore = true)
+    @Mapping(target = "author", ignore = true)
+    @Mapping(target = "publisher", ignore = true)
     Book toBook(BookCreationRequest request);
 
     @Mapping(target = "categories", ignore = true)
+    @Mapping(target = "author", ignore = true)
+    @Mapping(target = "publisher", ignore = true)
     void updateBook(@MappingTarget Book book, BookCreationRequest request);
 
     @AfterMapping

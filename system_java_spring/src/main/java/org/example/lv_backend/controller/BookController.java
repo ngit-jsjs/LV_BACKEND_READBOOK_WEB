@@ -12,6 +12,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.http.MediaType;
+import org.example.lv_backend.entity.BookStatus;
 import java.util.List;
 
 @Slf4j
@@ -45,12 +46,28 @@ public class BookController {
     @PreAuthorize("hasAnyAuthority('SCOPE_ADMIN')")
     @GetMapping("/my-upload-books")
     public ApiResponse<Page<BookResponse>> getMyUploadBook(
+            @RequestParam(required = false) BookStatus status,
             @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) String author,
+            @RequestParam(required = false) String publisher,
+            @RequestParam(required = false) Long year,
+            @RequestParam(required = false) List<Long> categoryIds,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
 
         return ApiResponse.<Page<BookResponse>>builder()
-                .result(bookService.getMyUploadBook(keyword, page, size))
+                .result(bookService.getMyUploadBook(status, keyword, author, publisher, year, categoryIds, page, size))
+                .build();
+    }
+
+    @PreAuthorize("hasAnyAuthority('SCOPE_USER')")
+    @GetMapping("/my-unrated-finished-books")
+    public ApiResponse<Page<BookResponse>> getMyUnratedFinishedBooks(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+
+        return ApiResponse.<Page<BookResponse>>builder()
+                .result(bookService.getUnratedFinishedBooks(page, size))
                 .build();
     }
 
@@ -102,7 +119,7 @@ public class BookController {
     public ApiResponse<String> deleteBook(@PathVariable("bookId") Long bookId) {
         bookService.deleteBook(bookId);
         return ApiResponse.<String>builder()
-                .result("Book has been deleted successfully")
+                .result("Book has been hidden successfully")
                 .build();
     }
 

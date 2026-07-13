@@ -11,6 +11,8 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.springframework.stereotype.Service;
+import org.example.lv_backend.exception.AppException;
+import org.example.lv_backend.exception.ErrorCode;
 
 import nl.siegmann.epublib.domain.Resource;
 import nl.siegmann.epublib.domain.SpineReference;
@@ -94,7 +96,7 @@ public class EpubParserService {
                 chapterNumber++;
             }
         } catch (Exception e) {
-            throw new RuntimeException("Lỗi khi parse file EPUB", e);
+            throw new AppException(ErrorCode.EPUB_PARSE_FAILED);
         }
         return chapterRepository.saveAll(chapters);
     }
@@ -175,7 +177,7 @@ public class EpubParserService {
             return doc.body() != null ? doc.body().html() : doc.html();
 
         } catch (Exception e) {
-            throw new RuntimeException("Không đọc được nội dung chapter từ EPUB", e);
+            throw new AppException(ErrorCode.EPUB_CHAPTER_CONTENT_READ_FAILED);
         }
     }
 

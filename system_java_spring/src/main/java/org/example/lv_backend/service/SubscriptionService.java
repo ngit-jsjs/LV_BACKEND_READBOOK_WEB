@@ -27,7 +27,8 @@ public class SubscriptionService {
             throw new AppException(ErrorCode.UNAUTHENTICATED);
         }
 
-        User user = userRepository.findByName(auth.getName())
+        Long userId = Long.parseLong(auth.getName());
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
         return subscriptionRepository.findByUserIdOrderByCreatedAtDesc(user.getId()).stream()
                 .map(subscriptionMapper::toSubscriptionResponse)

@@ -59,6 +59,9 @@ public class AuthenticationService {
                 () -> new AppException(ErrorCode.USER_NOT_EXISTED)
         );
 
+        if (!user.isActive()) {
+            throw new AppException(ErrorCode.USER_BANNED);
+        }
 
         boolean authenticated = webConfig.passwordEncoder().matches(authenticationRequest.getPassword(), user.getPassword());
 
@@ -92,7 +95,7 @@ public class AuthenticationService {
     public String generateToken(User user) {
         JWSHeader header = new JWSHeader(JWSAlgorithm.HS512);
         JWTClaimsSet jwtClaimsSet = new JWTClaimsSet.Builder()
-                .subject(user.getName())
+                .subject(user.getId().toString())
                 .issuer("book_system.com")
                 .issueTime(new Date())
                 .expirationTime(new Date(Instant.now().plus(1, ChronoUnit.HOURS).toEpochMilli()))
@@ -107,7 +110,7 @@ public class AuthenticationService {
             return jwsObject.serialize();
         } catch (JOSEException e) {
             log.error("Cannot create token", e);
-            throw new RuntimeException(e);
+            throw new AppException(ErrorCode.TOKEN_CREATION_FAILED);
         }
 
     }
@@ -151,6 +154,16 @@ public class AuthenticationService {
 
         if(invalidatedTokenRepository.existsById(signedJWT.getJWTClaimsSet().getJWTID()))
             throw  new AppException(ErrorCode.UNAUTHENTICATED);
+
+        // Kiểm tra xem tài khoản có đang bị khóa (banned) hay không
+        String userIdStr = signedJWT.getJWTClaimsSet().getSubject();
+        Long userId = Long.parseLong(userIdStr);
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new AppException(ErrorCode.UNAUTHENTICATED));
+        if (!user.isActive()) {
+            throw new AppException(ErrorCode.UNAUTHENTICATED);
+        }
+
         return  signedJWT;
     }
 

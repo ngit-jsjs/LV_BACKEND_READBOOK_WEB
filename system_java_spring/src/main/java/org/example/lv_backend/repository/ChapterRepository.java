@@ -14,4 +14,5 @@ import java.util.Optional;
 public interface ChapterRepository extends JpaRepository<Chapter, Long> {
     Page<Chapter> findByBookIdOrderByChapterNumberAsc(Long bookId, Pageable pageable);
     boolean existsByBookIdAndChapterNumberAndIdNot(Long bookId, Integer chapterNumber, Long id);
+    Optional<Chapter> findTopByBookIdOrderByChapterNumberDesc(Long bookId);
 }

@@ -27,7 +27,6 @@ public class BookCreationRequest {
     @NotBlank(message = "TITLE_BLANK")
     @Size(max = 255, message = "TITLE_INVALID")
     private String title;
-    @NotBlank(message = "AUTHOR_BLANK")
     private String author;
     
     private String coverImageUrl;
@@ -37,6 +36,9 @@ public class BookCreationRequest {
     private String description;
     
     private String publisher;
+
+    private Long authorId;
+    private Long publisherId;
 
     private Long year;
     

@@ -38,7 +38,6 @@ public class ChapterService {
     private final ChapterRepository chapterRepository;
     private final ChapterMapper chapterMapper;
     private final BookRepository bookRepository;
-    private final UserRepository userRepository;
     private final ChapterUnlockRepository chapterUnlockRepository;
     private final SecurityUtil securityUtil;
     private final EpubParserService epubParserService;
@@ -76,20 +75,15 @@ public class ChapterService {
 
 
     private boolean isChapterLocked(Chapter chapter) {
-                if (securityUtil.isAdmin() ||chapter.getIsFree()) {
+                if (securityUtil.isAdmin() || chapter.getIsFree()) {
                     return false;
                 }
-                String currentUsername = securityUtil.getCurrentUsername();
-                if (currentUsername == null) {
+                Long userId = securityUtil.getCurrentUserId();
+                if (userId == null) {
                     return true;
                 }
-                User currentUser = userRepository.findByName(currentUsername).orElse(null);
-                if (currentUser != null) {
-                    boolean isUnlocked = chapterUnlockRepository.checkIfUnlocked(currentUser.getId(), chapter.getId());
-                    return !isUnlocked;
-                } else {
-                    return true;
-                }
+                boolean isUnlocked = chapterUnlockRepository.checkIfUnlocked(userId, chapter.getId());
+                return !isUnlocked;
             }
 
 
@@ -131,20 +125,15 @@ public class ChapterService {
         if (securityUtil.isAdmin()) {
             return Collections.emptySet();
         }
-        String currentUsername = securityUtil.getCurrentUsername();
-        if (currentUsername == null) {
+        Long userId = securityUtil.getCurrentUserId();
+        if (userId == null) {
             return Collections.emptySet();
         }
         List<Long> chapterIds = chapters.stream().map(Chapter::getId).collect(Collectors.toList());
         if (chapterIds.isEmpty()) {
             return Collections.emptySet();
         }
-        User currentUser = userRepository.findByName(currentUsername).orElse(null);
-        if (currentUser != null) {
-            return chapterUnlockRepository.findUnlockedChapterIds(currentUser.getId(), chapterIds);
-        } else {
-            return Collections.emptySet();
-        }
+        return chapterUnlockRepository.findUnlockedChapterIds(userId, chapterIds);
     }
 
 

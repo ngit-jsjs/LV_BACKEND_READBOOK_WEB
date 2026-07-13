@@ -12,6 +12,10 @@ public interface RatingMapper {
 
     @Mapping(target = "userName", source = "user.name")
     @Mapping(target = "userId", source = "user.id")
+    @Mapping(target = "bookId", source = "book.id")
+    @Mapping(target = "bookTitle", source = "book.title")
+    @Mapping(target = "bookAuthor", source = "book.author.name")
+    @Mapping(target = "coverImageUrl", source = "book.coverImageUrl")
     RatingResponse toRatingResponse(Rating rating);
 
     @Mapping(target = "id", ignore = true)

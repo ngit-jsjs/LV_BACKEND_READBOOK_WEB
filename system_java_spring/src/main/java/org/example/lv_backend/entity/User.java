@@ -39,6 +39,10 @@ public class User {
     @Builder.Default
     private boolean verified = false;
 
+    @Column(nullable = false)
+    @Builder.Default
+    private boolean active = true;
+
     @ManyToMany
     @JoinTable(
             name = "user_roles",
