@@ -26,4 +26,7 @@ public interface ChapterUnlockRepository extends JpaRepository<ChapterUnlock, Ch
     boolean existsByChapter_Book_Id(@Param("bookId") Long bookId);
 
     Page<ChapterUnlock> findByUserIdOrderByCreatedAtDesc(Long userId, Pageable pageable);
+
+    @Query("SELECT SUM(c.price) FROM ChapterUnlock cu JOIN cu.chapter c WHERE cu.user.id = :userId")
+    java.math.BigDecimal sumCoinsSpentByUserId(@Param("userId") Long userId);
 }

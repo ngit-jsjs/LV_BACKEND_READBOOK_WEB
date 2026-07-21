@@ -12,5 +12,7 @@ public interface PaymentMapper {
     @Mapping(target = "userName", source = "user.name")
     @Mapping(target = "planId", source = "plan.id")
     @Mapping(target = "planName", source = "plan.name")
+    @Mapping(target = "planPrice", source = "plan.price")
+    @Mapping(target = "planAmount", source = "plan.amount")
     PaymentResponse toPaymentResponse(Payment payment);
 }

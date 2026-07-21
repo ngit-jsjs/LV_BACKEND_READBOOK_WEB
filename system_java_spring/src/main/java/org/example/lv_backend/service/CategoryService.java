@@ -13,6 +13,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -23,6 +24,7 @@ public class CategoryService {
     private final CategoryRepository categoryRepository;
     private final CategoryMapper categoryMapper;
 
+    @Transactional
     public CategoryResponse createCategory(CategoryCreationRequest request) {
         if (categoryRepository.existsByName(request.getName())) {
             throw new AppException(ErrorCode.CATEGORY_EXISTED);
@@ -32,12 +34,14 @@ public class CategoryService {
         return categoryMapper.toCategoryResponse(categoryRepository.save(category));
     }
 
+    @Transactional(readOnly = true)
     public Page<CategoryResponse> getAllCategories(int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "id"));
         return categoryRepository.findAll(pageable)
                 .map(categoryMapper::toCategoryResponse);
     }
 
+    @Transactional(readOnly = true)
     public List<CategoryResponse> getAllCategoriesList() {
         return categoryRepository.findAll(Sort.by(Sort.Direction.ASC, "name"))
                 .stream()
@@ -45,12 +49,14 @@ public class CategoryService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
     public CategoryResponse getCategoryById(Long id) {
         Category category = categoryRepository.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.CATEGORY_NOT_EXISTED));
         return categoryMapper.toCategoryResponse(category);
     }
 
+    @Transactional
     public CategoryResponse updateCategory(Long id, CategoryCreationRequest request) {
         Category category = categoryRepository.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.CATEGORY_NOT_EXISTED));
@@ -63,6 +69,7 @@ public class CategoryService {
         return categoryMapper.toCategoryResponse(categoryRepository.save(category));
     }
 
+    @Transactional(readOnly = true)
     public Page<CategoryResponse> searchCategories(String keyword, int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "id"));
         return categoryRepository.findDistinctByNameContainingIgnoreCase(keyword, pageable)

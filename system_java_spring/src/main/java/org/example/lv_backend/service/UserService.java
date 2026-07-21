@@ -22,6 +22,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.example.lv_backend.entity.Book;
 
 import java.math.BigDecimal;
@@ -54,6 +55,7 @@ public class UserService {
     }
 
 
+    @Transactional
     public UserResponse createUser (UserCreationRequest request){
 
 
@@ -83,13 +85,15 @@ public class UserService {
 
         UserResponse response = mapToUserResponse(userRepository.save(user));
 
-
+        String otp = otpService.generateAndSaveOtp(user.getEmail());
+        emailService.sendOtpEmail(user.getEmail(), otp);
 
         return response;
 
     }
 
 
+    @Transactional(readOnly = true)
     public UserResponse getMyInfo(){
         var context= SecurityContextHolder.getContext();
         String userIdStr=context.getAuthentication().getName();
@@ -109,6 +113,7 @@ public class UserService {
 
 
 
+    @Transactional
     public UserResponse updateUser(Long id, UserUpdateRequest request){
         User user=userRepository.findById(id).
                 orElseThrow(()->new AppException(ErrorCode.USER_NOT_EXISTED));
@@ -124,6 +129,7 @@ public class UserService {
 
 
 
+    @Transactional
     public void deleteUser(Long userId){
         User user = userRepository.findById(userId).orElseThrow(
                 () -> new AppException(ErrorCode.USER_NOT_EXISTED)
@@ -135,6 +141,7 @@ public class UserService {
 
 
 
+    @Transactional(readOnly = true)
     public Page<SearchingUserResponse> searchUser (String keyword, int page, int size){
         Pageable pageable = PageRequest.of(page, size);
 
@@ -148,6 +155,7 @@ public class UserService {
         return users.map(userMapper::toSearchingUserResponse);
     }
 
+    @Transactional(readOnly = true)
     public SearchingUserResponse getUserById(Long userId){
 
         User user = userRepository.findById(userId)

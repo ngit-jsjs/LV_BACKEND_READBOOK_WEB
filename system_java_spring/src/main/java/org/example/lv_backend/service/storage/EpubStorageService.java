@@ -1,6 +1,5 @@
 package org.example.lv_backend.service.storage;
 
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.example.lv_backend.exception.AppException;
 import org.example.lv_backend.exception.ErrorCode;
@@ -36,7 +35,6 @@ public class EpubStorageService {
         }
         //error code
     }
-    @Transactional
     public String storeFile(MultipartFile file) {
         validateEpubFile(file);
         Path storageDir = Paths.get(epubDir);

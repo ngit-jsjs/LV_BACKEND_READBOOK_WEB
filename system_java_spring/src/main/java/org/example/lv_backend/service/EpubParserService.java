@@ -1,6 +1,6 @@
 package org.example.lv_backend.service;
 
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.example.lv_backend.entity.Book;
 import org.example.lv_backend.entity.Chapter;

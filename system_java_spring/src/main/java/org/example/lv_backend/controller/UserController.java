@@ -61,16 +61,20 @@ public class UserController {
     #userId == authentication.principal.claims['userId']
     """)
     @PutMapping("/{userId}")
-    UserResponse updateUser(@PathVariable("userId") Long userId, @RequestBody UserUpdateRequest request){
-        return userService.updateUser(userId,request);
+    ApiResponse<UserResponse> updateUser(@PathVariable("userId") Long userId, @RequestBody UserUpdateRequest request) {
+        return ApiResponse.<UserResponse>builder()
+                .result(userService.updateUser(userId, request))
+                .build();
     }
 
 
     @PreAuthorize("hasAnyAuthority('SCOPE_ADMIN')")
     @DeleteMapping("/{userId}")
-    String deleteUser(@PathVariable("userId") Long userId){
+    ApiResponse<String> deleteUser(@PathVariable("userId") Long userId) {
         userService.deleteUser(userId);
-        return "User has been delete";
+        return ApiResponse.<String>builder()
+                .result("User has been deleted")
+                .build();
     }
 
 

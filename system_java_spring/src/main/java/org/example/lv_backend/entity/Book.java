@@ -36,6 +36,12 @@ public class Book {
     @JoinColumn(name = "publisher_id")
     private Publisher publisher;
 
+    @Column(name = "author")
+    private String authorName;
+
+    @Column(name = "publisher")
+    private String publisherName;
+
     private String coverImageUrl;
 
     private Long year;
