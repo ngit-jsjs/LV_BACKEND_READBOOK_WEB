@@ -3,13 +3,13 @@ package org.example.lv_backend.service;
 import lombok.RequiredArgsConstructor;
 import org.example.lv_backend.configuration.VNPayConfig;
 import org.example.lv_backend.dto.response.PaymentResponse;
+import org.example.lv_backend.dto.response.PaymentHistoryResponse;
 import org.example.lv_backend.entity.*;
 import org.example.lv_backend.exception.AppException;
 import org.example.lv_backend.exception.ErrorCode;
 import org.example.lv_backend.mapper.PaymentMapper;
 import org.example.lv_backend.repository.PaymentRepository;
 import org.example.lv_backend.repository.PlanRepository;
-import org.example.lv_backend.repository.SubscriptionRepository;
 import org.example.lv_backend.repository.UserRepository;
 import org.example.lv_backend.util.SecurityUtil;
 import org.example.lv_backend.util.VNPayUtil;
@@ -34,7 +34,6 @@ public class PaymentService {
     private final PaymentRepository paymentRepository;
     private final UserRepository userRepository;
     private final PlanRepository planRepository;
-    private final SubscriptionRepository subscriptionRepository;
     private final PaymentMapper paymentMapper;
     private final SecurityUtil securityUtil;
     @Transactional
@@ -48,7 +47,7 @@ public class PaymentService {
         }
 
         Plan plan = planRepository.findById(planId)
-                .orElseThrow(() -> new RuntimeException("Gói xu không tồn tại"));
+                .orElseThrow(() -> new AppException(ErrorCode.PLAN_NOT_EXISTED));
         String vnpTxnRef = UUID.randomUUID().toString().replace("-", "").substring(0, 20);
 
         Payment payment = Payment.builder()
@@ -146,13 +145,6 @@ public class PaymentService {
             Plan plan = payment.getPlan();
             user.setAmount(user.getAmount().add(BigDecimal.valueOf(plan.getAmount())));
             userRepository.save(user);
-
-            Subscription subscription = Subscription.builder()
-                    .user(user)
-                    .plan(plan)
-                    .status(SubStatus.COMPLETED)
-                    .build();
-            subscriptionRepository.save(subscription);
         } else {
             payment.setStatus(PaymentStatus.FAILED);
         }
@@ -161,18 +153,56 @@ public class PaymentService {
     }
 
     @Transactional(readOnly = true)
-    public Page<PaymentResponse> getMyPaymentHistory(int page, int size) {
+    public PaymentHistoryResponse getMyPaymentHistory(int page, int size) {
         Long userId = securityUtil.getCurrentUserId();
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
-        return paymentRepository.findByUserIdOrderByCreatedAtDesc(userId, pageable)
-                .map(paymentMapper::toPaymentResponse);
+        Page<Payment> pageResult = paymentRepository.findByUserIdOrderByCreatedAtDesc(userId, pageable);
+        
+        BigDecimal totalAmount = paymentRepository.sumAmountByUserIdAndStatusSuccess(userId);
+        if (totalAmount == null) {
+            totalAmount = BigDecimal.ZERO;
+        }
+
+        Long totalCoins = paymentRepository.sumCoinsByUserIdAndStatusSuccess(userId);
+        if (totalCoins == null) {
+            totalCoins = 0L;
+        }
+
+        return PaymentHistoryResponse.builder()
+                .content(pageResult.getContent().stream().map(paymentMapper::toPaymentResponse).toList())
+                .totalPages(pageResult.getTotalPages())
+                .totalElements(pageResult.getTotalElements())
+                .size(pageResult.getSize())
+                .number(pageResult.getNumber())
+                .totalAmount(totalAmount)
+                .totalCoins(totalCoins)
+                .build();
     }
 
 
     @Transactional(readOnly = true)
-    public Page<PaymentResponse> getPaymentsByUserAdmin(Long userId, int page, int size) {
-        Pageable pageable = PageRequest.of(page, size);
-        return paymentRepository.findByUserIdOrderByCreatedAtDesc(userId, pageable)
-                .map(paymentMapper::toPaymentResponse);
+    public PaymentHistoryResponse getPaymentsByUserAdmin(Long userId, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+        Page<Payment> pageResult = paymentRepository.findByUserIdOrderByCreatedAtDesc(userId, pageable);
+        
+        BigDecimal totalAmount = paymentRepository.sumAmountByUserIdAndStatusSuccess(userId);
+        if (totalAmount == null) {
+            totalAmount = BigDecimal.ZERO;
+        }
+
+        Long totalCoins = paymentRepository.sumCoinsByUserIdAndStatusSuccess(userId);
+        if (totalCoins == null) {
+            totalCoins = 0L;
+        }
+
+        return PaymentHistoryResponse.builder()
+                .content(pageResult.getContent().stream().map(paymentMapper::toPaymentResponse).toList())
+                .totalPages(pageResult.getTotalPages())
+                .totalElements(pageResult.getTotalElements())
+                .size(pageResult.getSize())
+                .number(pageResult.getNumber())
+                .totalAmount(totalAmount)
+                .totalCoins(totalCoins)
+                .build();
     }
 }

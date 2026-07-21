@@ -62,6 +62,7 @@ public class BookListService {
     }
 
 
+    @Transactional
     public BookListResponse createBookList(BookListRequest request) {
         Long userId = securityUtil.getCurrentUserId();
         
@@ -81,6 +82,7 @@ public class BookListService {
     }
 
 
+    @Transactional(readOnly = true)
     public List<BookListResponse> getMyBookLists() {
         Long userId = securityUtil.getCurrentUserId();
         return bookListRepository.findByUser_Id(userId).stream()
@@ -88,6 +90,7 @@ public class BookListService {
                 .collect(Collectors.toList());
     }
  
+    @Transactional(readOnly = true)
     public Page<BookListResponse> getMyBookLists(int page, int size) {
         Long userId = securityUtil.getCurrentUserId();
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "id"));
@@ -96,6 +99,7 @@ public class BookListService {
     }
 
 
+    @Transactional(readOnly = true)
     public BookListResponse getBookListById(Long id) {
         BookList bookList = bookListRepository.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.BOOKLIST_NOT_EXISTED));
@@ -105,6 +109,7 @@ public class BookListService {
 
 
 
+    @Transactional
     public BookListResponse updateBookList(Long id, BookListRequest request) {
         BookList bookList = bookListRepository.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.BOOKLIST_NOT_EXISTED));
@@ -121,6 +126,7 @@ public class BookListService {
     }
 
 
+    @Transactional
     public void deleteBookList(Long id) {
         BookList bookList = bookListRepository.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.BOOKLIST_NOT_EXISTED));
@@ -164,19 +170,10 @@ public class BookListService {
     }
 
 
-    private BookResponse mapToBookResponse(Book book) {
-        BookResponse response = bookMapper.toBookResponse(book);
-        if (book.getCategories() != null) {
-            response.setCategories(book.getCategories().stream()
-                    .map(Category::getName)
-                    .collect(Collectors.toSet()));
-        } else {
-            response.setCategories(new HashSet<>());
-        }
-        return response;
-    }
 
 
+
+    @Transactional(readOnly = true)
     public Page<BookResponse> getBooksInBookList(Long id, int page, int size) {
         BookList bookList = bookListRepository.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.BOOKLIST_NOT_EXISTED));
@@ -184,6 +181,6 @@ public class BookListService {
 
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "id"));
         Page<Book> booksPage = bookRepository.findByBookLists_Id(id, pageable);
-        return booksPage.map(this::mapToBookResponse);
+        return booksPage.map(bookMapper::toBookResponse);
     }
 }

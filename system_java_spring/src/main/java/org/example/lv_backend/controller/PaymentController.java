@@ -4,6 +4,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.example.lv_backend.dto.response.ApiResponse;
 import org.example.lv_backend.dto.response.PaymentResponse;
+import org.example.lv_backend.dto.response.PaymentHistoryResponse;
 import org.example.lv_backend.entity.PaymentStatus;
 import org.example.lv_backend.entity.User;
 import org.example.lv_backend.exception.AppException;
@@ -74,10 +75,10 @@ public class PaymentController {
     }
 
     @GetMapping("/my-history")
-    public ApiResponse<Page<PaymentResponse>> getMyPaymentHistory(
+    public ApiResponse<PaymentHistoryResponse> getMyPaymentHistory(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
-        return ApiResponse.<Page<PaymentResponse>>builder()
+        return ApiResponse.<PaymentHistoryResponse>builder()
                 .message("Lấy lịch sử giao dịch nạp xu thành công")
                 .result(paymentService.getMyPaymentHistory(page, size))
                 .build();
@@ -85,11 +86,11 @@ public class PaymentController {
 
     @GetMapping("/admin/user/{userId}")
     @PreAuthorize("hasAnyAuthority('SCOPE_ADMIN')")
-    public ApiResponse<Page<PaymentResponse>> getPaymentsByUserAdmin(
+    public ApiResponse<PaymentHistoryResponse> getPaymentsByUserAdmin(
             @PathVariable Long userId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
-        return ApiResponse.<Page<PaymentResponse>>builder()
+        return ApiResponse.<PaymentHistoryResponse>builder()
                 .message("Lấy lịch sử giao dịch nạp xu của người dùng thành công")
                 .result(paymentService.getPaymentsByUserAdmin(userId, page, size))
                 .build();

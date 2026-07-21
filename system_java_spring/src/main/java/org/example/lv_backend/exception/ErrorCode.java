@@ -49,6 +49,7 @@ public enum ErrorCode {
     UNAUTHORIZED_BOOKLIST(1052, "Bạn không có quyền chỉnh sửa danh sách theo dõi này", HttpStatus.FORBIDDEN),
     BOOKLIST_EXISTED(1053, "Danh sách theo dõi này đã tồn tại", HttpStatus.BAD_REQUEST),
     READING_HISTORY_NOT_EXISTED(1060, "Lịch sử đọc không tồn tại", HttpStatus.NOT_FOUND),
+    BOOK_NOT_COMPLETED_YET(1061, "Bạn phải đọc xong tác phẩm này trước khi đánh giá", HttpStatus.BAD_REQUEST),
     INVALID_EPUB_FILE(1070, "File EPUB không hợp lệ hoặc không chứa chương nào hợp lệ", HttpStatus.BAD_REQUEST),
     INVALID_IMAGE_FILE(1071, "File ảnh bìa không hợp lệ (chỉ chấp nhận định dạng png, jpg, jpeg, webp)", HttpStatus.BAD_REQUEST),
     EMAIL_NOT_VERIFIED(1080, "Email của bạn chưa được xác thực. Vui lòng xác thực trước khi đăng nhập.", HttpStatus.FORBIDDEN),
@@ -71,12 +72,15 @@ public enum ErrorCode {
     TITLE_INVALID(1049, "Tên sách không được vượt quá 255 ký tự", HttpStatus.BAD_REQUEST),
     EPUB_FILE_EMPTY(1098, "File EPUB không được để trống", HttpStatus.BAD_REQUEST),
     EPUB_FILE_INVALID_FORMAT(1099, "Chỉ chấp nhận file định dạng .epub", HttpStatus.BAD_REQUEST),
+    PLAN_NOT_EXISTED(1091, "Gói xu không tồn tại", HttpStatus.NOT_FOUND),
+    RATING_NOT_EXISTED(1092, "Đánh giá không tồn tại", HttpStatus.NOT_FOUND),
     RECOMMENDER_TRAIN_FAILED(1100, "Lỗi khi huấn luyện hệ thống gợi ý", HttpStatus.INTERNAL_SERVER_ERROR),
     EPUB_PARSE_FAILED(1101, "Lỗi khi xử lý (parse) nội dung file EPUB", HttpStatus.INTERNAL_SERVER_ERROR),
     EPUB_CHAPTER_CONTENT_READ_FAILED(1102, "Không đọc được nội dung chương từ EPUB", HttpStatus.INTERNAL_SERVER_ERROR),
     EPUB_FILE_MISSING(1103, "Không tìm thấy file EPUB", HttpStatus.BAD_REQUEST),
     EPUB_IMPORT_FAILED(1104, "Import file EPUB thất bại", HttpStatus.INTERNAL_SERVER_ERROR),
     TOKEN_CREATION_FAILED(1105, "Không thể tạo token xác thực", HttpStatus.INTERNAL_SERVER_ERROR),
+    INVALID_PUBLISH_YEAR(1106, "Năm xuất bản không được lớn hơn năm hiện tại", HttpStatus.BAD_REQUEST),
     ;
 
 

@@ -17,6 +17,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -34,7 +35,7 @@ public class ReadingHistoryService {
         ReadingHistoryResponse response = readingHistoryMapper.toReadingHistoryResponse(history);
         if (history.getBook() != null) {
             response.setBookTitle(history.getBook().getTitle());
-            response.setBookAuthor(history.getBook().getAuthor().getName());
+            response.setBookAuthor(history.getBook().getAuthorName());
             response.setCoverImageUrl(history.getBook().getCoverImageUrl());
         }
         if (history.getLastReadChapter() != null) {
@@ -48,6 +49,7 @@ public class ReadingHistoryService {
 
 
 
+    @Transactional
     public ReadingHistoryResponse saveOrUpdate(ReadingHistoryRequest request) {
         Long userId = securityUtil.getCurrentUserId();
 
@@ -85,6 +87,7 @@ public class ReadingHistoryService {
     }
 
 
+    @Transactional(readOnly = true)
     public Page<ReadingHistoryResponse> getMyReadingHistory(int page, int size) {
         Long userId = securityUtil.getCurrentUserId();
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "updatedAt").and(Sort.by(Sort.Direction.DESC, "id")));

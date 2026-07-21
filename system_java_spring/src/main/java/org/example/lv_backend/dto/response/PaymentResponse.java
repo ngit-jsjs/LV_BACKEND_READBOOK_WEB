@@ -27,4 +27,6 @@ public class PaymentResponse {
 
     private Long planId;
     private String planName;
+    private BigDecimal planPrice;
+    private Long planAmount;
 }

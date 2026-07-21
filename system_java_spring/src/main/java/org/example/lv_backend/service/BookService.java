@@ -1,6 +1,6 @@
 package org.example.lv_backend.service;
 
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.example.lv_backend.util.SecurityUtil;
 import org.example.lv_backend.dto.request.book.BookCreationRequest;
@@ -27,6 +27,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.Year;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -49,17 +50,7 @@ public class BookService {
     private final AuthorRepository authorRepository;
     private final PublisherRepository publisherRepository;
 
-    private BookResponse mapToBookResponse(Book book) {
-        BookResponse response = bookMapper.toBookResponse(book);
-        if (book.getCategories() != null) {
-            response.setCategories(book.getCategories().stream()
-                    .map(Category::getName)
-                    .collect(Collectors.toSet()));
-        } else {
-            response.setCategories(new HashSet<>());
-        }
-        return response;
-    }
+
 
     private Author resolveAuthor(Long authorId, String authorName) {
         if (authorId != null) {
@@ -93,8 +84,15 @@ public class BookService {
         return null;
     }
 
+    private void validatePublishYear(Long year) {
+        if (year != null && year > Year.now().getValue()) {
+            throw new AppException(ErrorCode.INVALID_PUBLISH_YEAR);
+        }
+    }
 
 
+
+    @Transactional(readOnly = true)
     public Page<BookResponse> getMyUploadBook(
             BookStatus status,
             String keyword,
@@ -118,11 +116,12 @@ public class BookService {
         );
 
         Page<Book> bookList = bookRepository.findAll(spec, pageable);
-        return bookList.map(this::mapToBookResponse);
+        return bookList.map(bookMapper::toBookResponse);
     }
 
 
 
+    @Transactional(readOnly = true)
     public Page<BookResponse> searchBook(
             String keyword,
             String author,
@@ -144,13 +143,14 @@ public class BookService {
         );
 
         Page<Book> books = bookRepository.findAll(spec, pageable);
-        return books.map(this::mapToBookResponse);
+        return books.map(bookMapper::toBookResponse);
     }
 
 
 
     @Transactional
     public BookResponse createBook (BookCreationRequest request, MultipartFile file){
+        validatePublishYear(request.getYear());
         var title = request.getTitle();
         if(bookRepository.existsByTitle(title))
             throw new AppException(ErrorCode.NAMEBOOK_EXISTED);
@@ -175,8 +175,13 @@ public class BookService {
                 request.setCoverImageUrl(imageUrl);
             }
             Book book = bookMapper.toBook(request);
-            book.setAuthor(resolveAuthor(request.getAuthorId(), request.getAuthor()));
-            book.setPublisher(resolvePublisher(request.getPublisherId(), request.getPublisher()));
+            Author authorVal = resolveAuthor(request.getAuthorId(), request.getAuthor());
+            book.setAuthor(authorVal);
+            book.setAuthorName(authorVal != null ? authorVal.getName() : request.getAuthor());
+
+            Publisher publisherVal = resolvePublisher(request.getPublisherId(), request.getPublisher());
+            book.setPublisher(publisherVal);
+            book.setPublisherName(publisherVal != null ? publisherVal.getName() : request.getPublisher());
             book.setCategories(categories);
 
             Long userId = securityUtil.getCurrentUserId();
@@ -188,7 +193,7 @@ public class BookService {
 
             book = bookRepository.save(book);
 
-            return mapToBookResponse(book);
+            return bookMapper.toBookResponse(book);
 
         } catch (Exception e) {
             if (imageUrl != null) {
@@ -201,6 +206,7 @@ public class BookService {
 
     @Transactional
     public BookResponse updateBook(Long id, BookCreationRequest request, MultipartFile file){
+        validatePublishYear(request.getYear());
         Book book=bookRepository.findById(id).
                 orElseThrow(()->new AppException(ErrorCode.BOOK_NOT_EXISTED));
 
@@ -223,22 +229,28 @@ public class BookService {
             categories.addAll(categoryList);
         }
 
-        String newImageUrl=null;
+        String newImageUrl = null;
         try {
             bookMapper.updateBook(book, request);
-            book.setAuthor(resolveAuthor(request.getAuthorId(), request.getAuthor()));
-            book.setPublisher(resolvePublisher(request.getPublisherId(), request.getPublisher()));
+            Author authorVal = resolveAuthor(request.getAuthorId(), request.getAuthor());
+            book.setAuthor(authorVal);
+            book.setAuthorName(authorVal != null ? authorVal.getName() : request.getAuthor());
+
+            Publisher publisherVal = resolvePublisher(request.getPublisherId(), request.getPublisher());
+            book.setPublisher(publisherVal);
+            book.setPublisherName(publisherVal != null ? publisherVal.getName() : request.getPublisher());
             if (file != null && !file.isEmpty()) {
+                String oldImageUrl = book.getCoverImageUrl(); // lấy URL cũ TRƯỚC khi ghi đè
                 newImageUrl = imageStorageService.storeFile(file);
                 book.setCoverImageUrl(newImageUrl);
-                String oldImageUrl = book.getCoverImageUrl();
-                imageStorageService.deleteFile(oldImageUrl);
+                if (oldImageUrl != null) {
+                    imageStorageService.deleteFile(oldImageUrl);
+                }
             }
             book.setCategories(categories);
-            BookResponse response = mapToBookResponse(bookRepository.save(book));
-            return response;
+            return bookMapper.toBookResponse(bookRepository.save(book));
         } catch (Exception e) {
-            if (newImageUrl!= null) {
+            if (newImageUrl != null) {
                 imageStorageService.deleteFile(newImageUrl);
             }
             throw e;
@@ -248,6 +260,7 @@ public class BookService {
 
 
 
+    @Transactional(readOnly = true)
     public BookResponse getBookById(Long id) {
         Book book = bookRepository.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.BOOK_NOT_EXISTED));
@@ -256,7 +269,7 @@ public class BookService {
             throw new AppException(ErrorCode.BOOK_NOT_EXISTED);
         }
 
-        return mapToBookResponse(book);
+        return bookMapper.toBookResponse(book);
     }
 
 
@@ -276,6 +289,7 @@ public class BookService {
 
 
 
+    @Transactional(readOnly = true)
     public Page<BookResponse> getAllPublishedBooks(
             int page,
             int size
@@ -288,14 +302,15 @@ public class BookService {
                         BookStatus.AVAILABLE,
                         pageable
                 )
-                .map(this::mapToBookResponse);
+                .map(bookMapper::toBookResponse);
     }
 
+    @Transactional(readOnly = true)
     public Page<BookResponse> getUnratedFinishedBooks(int page, int size) {
         Long userId = securityUtil.getCurrentUserId();
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "id"));
         Page<Book> books = bookRepository.findUnratedFinishedBooks(userId, pageable);
-        return books.map(this::mapToBookResponse);
+        return books.map(bookMapper::toBookResponse);
     }
 
 
@@ -333,7 +348,7 @@ public class BookService {
                 epubStorageService.deleteFile(oldEpubPath);
             }
 
-            return mapToBookResponse(book);
+            return bookMapper.toBookResponse(book);
 
         } catch (Exception e) {
             epubStorageService.deleteFile(storedPath);
