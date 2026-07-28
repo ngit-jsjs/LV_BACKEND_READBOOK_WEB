@@ -60,33 +60,34 @@ def save_recommendations(df_recs):
         print(f"Error saving recommendations to database: {err_msg}")
         return False
 
-def save_user_similarities(df_sims):
+def get_reading_history():
     """
-    Lưu độ tương đồng giữa các user vào bảng user_sim.
-    df_sims: pandas.DataFrame có các cột: user_id_a, user_id_b, similarity_score
+    Lấy danh sách các cặp (user_id, book_id) mà người dùng đã đọc từ bảng reading_history.
+    Trả về: set chứa các tuple (user_id, book_id)
     """
-    if df_sims.empty:
-        print("No user similarities to save.")
-        return False
-        
+    query = "SELECT user_id, book_id FROM reading_history"
     try:
-        with engine.begin() as conn:
-            # Xóa các độ tương đồng cũ
-            conn.execute(text("DELETE FROM user_sim"))
-            print("Cleared old user similarities.")
-            
-            # Ghi đè dữ liệu mới
-            df_sims.to_sql(
-                name='user_sim',
-                con=conn,
-                if_exists='append',
-                index=False,
-                method='multi',
-                chunksize=1000
-            )
-            print(f"Successfully saved {len(df_sims)} user similarity records to database.")
-        return True
+        with engine.connect() as conn:
+            df = pd.read_sql(query, conn)
+        print(f"Loaded {len(df)} reading history records.")
+        return set(zip(df['user_id'].astype(int), df['book_id'].astype(int)))
     except Exception as e:
-        err_msg = str(e).split('\n')[0]
-        print(f"Error saving user similarities to database: {err_msg}")
-        return False
+        print(f"Error loading reading history from database: {e}")
+        return set()
+
+def get_available_book_ids():
+    """
+    Lấy danh sách ID các cuốn sách đang ở trạng thái 'AVAILABLE' từ bảng books.
+    Trả về: set chứa các book_id (int)
+    """
+    query = "SELECT id FROM books WHERE status = 'AVAILABLE'"
+    try:
+        with engine.connect() as conn:
+            df = pd.read_sql(query, conn)
+        print(f"Loaded {len(df)} available books.")
+        return set(df['id'].astype(int))
+    except Exception as e:
+        print(f"Error loading available books from database: {e}")
+        return set()
+
+
