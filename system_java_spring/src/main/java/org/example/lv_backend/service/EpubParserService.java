@@ -104,9 +104,36 @@ public class EpubParserService {
     private void flattenToc(List<TOCReference> refs, List<TOCReference> result) {
         if (refs == null) return;
         for (TOCReference ref : refs) {
-            result.add(ref);
+            TOCReference firstChild = null;
             if (ref.getChildren() != null && !ref.getChildren().isEmpty()) {
-                flattenToc(ref.getChildren(), result);
+                firstChild = ref.getChildren().get(0);
+            }
+
+            boolean shouldMerge = false;
+            if (firstChild != null && ref.getResource() != null && firstChild.getResource() != null) {
+                String refHref = ref.getResource().getHref();
+                String childHref = firstChild.getResource().getHref();
+                if (refHref != null && refHref.equals(childHref)) {
+                    shouldMerge = true;
+                }
+            }
+
+            if (shouldMerge) {
+                String parentTitle = ref.getTitle() != null ? ref.getTitle().trim() : "";
+                String childTitle = firstChild.getTitle() != null ? firstChild.getTitle().trim() : "";
+                if (!parentTitle.equalsIgnoreCase(childTitle)) {
+                    ref.setTitle(parentTitle + " - " + childTitle);
+                }
+                result.add(ref);
+                
+                List<TOCReference> remainingChildren = new java.util.ArrayList<>(ref.getChildren());
+                remainingChildren.remove(0);
+                flattenToc(remainingChildren, result);
+            } else {
+                result.add(ref);
+                if (ref.getChildren() != null && !ref.getChildren().isEmpty()) {
+                    flattenToc(ref.getChildren(), result);
+                }
             }
         }
     }

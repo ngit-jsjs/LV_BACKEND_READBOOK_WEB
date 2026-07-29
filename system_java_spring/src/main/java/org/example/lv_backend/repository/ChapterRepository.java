@@ -15,4 +15,6 @@ public interface ChapterRepository extends JpaRepository<Chapter, Long> {
     Page<Chapter> findByBookIdOrderByChapterNumberAsc(Long bookId, Pageable pageable);
     boolean existsByBookIdAndChapterNumberAndIdNot(Long bookId, Integer chapterNumber, Long id);
     Optional<Chapter> findTopByBookIdOrderByChapterNumberDesc(Long bookId);
+    Optional<Chapter> findFirstByBookIdAndChapterNumberLessThanOrderByChapterNumberDesc(Long bookId, Integer chapterNumber);
+    Optional<Chapter> findFirstByBookIdAndChapterNumberGreaterThanOrderByChapterNumberAsc(Long bookId, Integer chapterNumber);
 }
