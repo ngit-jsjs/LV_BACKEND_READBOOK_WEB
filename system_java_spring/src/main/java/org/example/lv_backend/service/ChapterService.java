@@ -29,6 +29,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -105,6 +106,15 @@ public class ChapterService {
         boolean isLocked = isChapterLocked(chapter);
 
         ChapterDetailResponse response = chapterMapper.toChapterDetailResponse(chapter, isLocked);
+
+        Long bookId = chapter.getBook().getId();
+        Integer chapterNumber = chapter.getChapterNumber();
+        Optional<Chapter> prevChapter = chapterRepository.findFirstByBookIdAndChapterNumberLessThanOrderByChapterNumberDesc(bookId, chapterNumber);
+        Optional<Chapter> nextChapter = chapterRepository.findFirstByBookIdAndChapterNumberGreaterThanOrderByChapterNumberAsc(bookId, chapterNumber);
+
+        response.setPrevChapterId(prevChapter.map(Chapter::getId).orElse(null));
+        response.setNextChapterId(nextChapter.map(Chapter::getId).orElse(null));
+
         if (!isLocked) {
             String content = epubParserService.readChapterContent(
                     chapter.getBook().getStoragePath(),

@@ -22,6 +22,8 @@ public class ChapterDetailResponse {
     private Boolean isFree;
     private BigDecimal price;
     private Boolean isLocked;
+    private Long prevChapterId;
+    private Long nextChapterId;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

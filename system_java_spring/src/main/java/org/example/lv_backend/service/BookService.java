@@ -351,6 +351,7 @@ public class BookService {
             return bookMapper.toBookResponse(book);
 
         } catch (Exception e) {
+            e.printStackTrace();
             epubStorageService.deleteFile(storedPath);
             throw new AppException(ErrorCode.EPUB_IMPORT_FAILED);
         }
