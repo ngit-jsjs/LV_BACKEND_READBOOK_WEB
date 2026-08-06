@@ -38,6 +38,7 @@ public class ReadingHistory {
     @OnDelete(action = OnDeleteAction.CASCADE)
     private Chapter lastReadChapter;
 
+    @Builder.Default
     @Column(name = "is_completed", columnDefinition = "boolean default false")
     private Boolean isCompleted = false;
 

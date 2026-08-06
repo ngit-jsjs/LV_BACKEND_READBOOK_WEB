@@ -21,6 +21,5 @@ public class UserResponse {
     private BigDecimal amount;
     private boolean verified;
     private boolean active;
-//    private List<PublishedBookResponse> publishedBooks;
-//    private List<FavoriteBookResponse> favortiteBook;
+
 }
