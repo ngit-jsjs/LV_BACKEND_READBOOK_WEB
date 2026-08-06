@@ -53,7 +53,7 @@ public class RatingController {
             @PathVariable Long bookId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "id"));
         return ApiResponse.<Page<RatingResponse>>builder()
                 .result(ratingService.getRatingsByBook(bookId, pageable))
                 .build();
@@ -64,7 +64,7 @@ public class RatingController {
     public ApiResponse<Page<RatingResponse>> getMyRatings(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "id"));
         return ApiResponse.<Page<RatingResponse>>builder()
                 .result(ratingService.getMyRatings(pageable))
                 .build();
