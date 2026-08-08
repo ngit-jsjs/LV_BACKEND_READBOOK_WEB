@@ -33,6 +33,12 @@ public class Chapter {
 
         private String nextAnchor;
 
+        private Integer partSectionIndex;
+
+        private String partFragmentId;
+
+        private String partNextAnchor;
+
 
         private Boolean isFree;
 

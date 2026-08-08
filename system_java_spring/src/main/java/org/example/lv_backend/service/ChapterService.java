@@ -120,7 +120,10 @@ public class ChapterService {
                     chapter.getBook().getStoragePath(),
                     chapter.getSectionIndex(),
                     chapter.getFragmentId(),
-                    chapter.getNextAnchor()
+                    chapter.getNextAnchor(),
+                    chapter.getPartSectionIndex(),
+                    chapter.getPartFragmentId(),
+                    chapter.getPartNextAnchor()
             );
             response.setContent(content);
         }

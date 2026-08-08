@@ -56,8 +56,6 @@ public class RecommendationService {
                     .collect(Collectors.toList());
         }
         
-        Collections.shuffle(recommendations);
-        
         return recommendations.stream()
                 .limit(15)
                 .map(Recommendation::getBook)
