@@ -35,7 +35,7 @@ public class ReadingHistoryService {
         ReadingHistoryResponse response = readingHistoryMapper.toReadingHistoryResponse(history);
         if (history.getBook() != null) {
             response.setBookTitle(history.getBook().getTitle());
-            response.setBookAuthor(history.getBook().getAuthorName());
+            response.setBookAuthor(history.getBook().getAuthor() != null ? history.getBook().getAuthor().getName() : null);
             response.setCoverImageUrl(history.getBook().getCoverImageUrl());
         }
         if (history.getLastReadChapter() != null) {

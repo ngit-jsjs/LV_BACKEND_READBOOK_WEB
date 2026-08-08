@@ -36,12 +36,6 @@ public class Book {
     @JoinColumn(name = "publisher_id")
     private Publisher publisher;
 
-    @Column(name = "author")
-    private String authorName;
-
-    @Column(name = "publisher")
-    private String publisherName;
-
     private String coverImageUrl;
 
     private Long year;
@@ -61,7 +55,8 @@ public class Book {
 
 //    private Long viewCount;
 //
-    private BigDecimal averageRating;
+    @Builder.Default
+    private BigDecimal averageRating = BigDecimal.ZERO;
     @CreationTimestamp
     private LocalDateTime createdAt;
     @UpdateTimestamp
@@ -100,6 +95,5 @@ public class Book {
     @OneToMany(mappedBy = "book", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private List<ReadingHistory> readingHistories = new ArrayList<>();
-
 
 }

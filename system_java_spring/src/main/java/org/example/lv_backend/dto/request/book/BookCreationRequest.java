@@ -27,6 +27,7 @@ public class BookCreationRequest {
     @NotBlank(message = "TITLE_BLANK")
     @Size(max = 255, message = "TITLE_INVALID")
     private String title;
+    
     private String author;
     
     private String coverImageUrl;
@@ -37,10 +38,14 @@ public class BookCreationRequest {
     
     private String publisher;
 
+    @NotNull(message = "AUTHOR_NOT_EXISTED")
     private Long authorId;
+
+    @NotNull(message = "PUBLISHER_NOT_EXISTED")
     private Long publisherId;
 
     private Long year;
-    
+
+    @NotEmpty(message = "CATEGORY_NOT_EXISTED")
     private Set<Long> categoryIds;
 }

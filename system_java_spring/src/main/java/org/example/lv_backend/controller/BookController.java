@@ -4,10 +4,14 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.lv_backend.dto.request.book.BookCreationRequest;
+import org.example.lv_backend.dto.request.book.BookFilterRequest;
 import org.example.lv_backend.dto.response.ApiResponse;
 import org.example.lv_backend.dto.response.book.BookResponse;
 import org.example.lv_backend.service.BookService;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -46,17 +50,11 @@ public class BookController {
     @PreAuthorize("hasAnyAuthority('SCOPE_ADMIN')")
     @GetMapping("/my-upload-books")
     public ApiResponse<Page<BookResponse>> getMyUploadBook(
-            @RequestParam(required = false) BookStatus status,
-            @RequestParam(required = false) String keyword,
-            @RequestParam(required = false) String author,
-            @RequestParam(required = false) String publisher,
-            @RequestParam(required = false) Long year,
-            @RequestParam(required = false) List<Long> categoryIds,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
+            BookFilterRequest filter,
+            @PageableDefault(sort = "id", direction = Sort.Direction.DESC) Pageable pageable) {
 
         return ApiResponse.<Page<BookResponse>>builder()
-                .result(bookService.getMyUploadBook(status, keyword, author, publisher, year, categoryIds, page, size))
+                .result(bookService.getMyUploadBook(filter, pageable))
                 .build();
     }
 
@@ -72,27 +70,22 @@ public class BookController {
     }
 
     @GetMapping
-    public ApiResponse<Page<BookResponse>> getAllBooks(
+    public ApiResponse<Page<BookResponse>> getAllAvailableBooks(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
 
         return ApiResponse.<Page<BookResponse>>builder()
-                .result(bookService.getAllPublishedBooks(page, size))
+                .result(bookService.getAllAvailableBooks(page, size))
                 .build();
     }
 
     @GetMapping("/search")
     public ApiResponse<Page<BookResponse>> searchBook(
-            @RequestParam(required = false, defaultValue = "") String keyword,
-            @RequestParam(required = false) String author,
-            @RequestParam(required = false) String publisher,
-            @RequestParam(required = false) Long year,
-            @RequestParam(required = false) List<Long> categoryIds,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
+            BookFilterRequest filter,
+            @PageableDefault(sort = {"averageRating", "id"}, direction = Sort.Direction.DESC) Pageable pageable) {
 
         return ApiResponse.<Page<BookResponse>>builder()
-                .result(bookService.searchBook(keyword, author, publisher, year, categoryIds, page, size))
+                .result(bookService.searchBook(filter, pageable))
                 .build();
     }
 

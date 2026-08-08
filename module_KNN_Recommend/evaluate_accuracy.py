@@ -5,7 +5,6 @@ from surprise import Reader, Dataset, KNNBasic, accuracy
 from surprise.model_selection import train_test_split
 from src.database import get_ratings_data
 
-# Fix lỗi font tiếng Việt trên màn hình console Windows
 if sys.stdout.encoding.lower() != 'utf-8':
     sys.stdout.reconfigure(encoding='utf-8')
 
@@ -46,3 +45,4 @@ def evaluate_current_model():
 
 if __name__ == "__main__":
     evaluate_current_model()
+

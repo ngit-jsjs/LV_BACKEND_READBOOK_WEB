@@ -145,17 +145,15 @@ public class AuthenticationService {
         JWSVerifier verifier = new MACVerifier(SIGNER_KEY.getBytes());
 
         SignedJWT signedJWT = SignedJWT.parse(token);
-        //kiem tra het han hay chua
         Date expityTime =signedJWT.getJWTClaimsSet().getExpirationTime();
 
-        var verified = signedJWT.verify(verifier); //tra ve true hoac false
+        var verified = signedJWT.verify(verifier); 
         if(!(verified && expityTime.after(new Date())))
             throw new AppException(ErrorCode.UNAUTHENTICATED);
 
         if(invalidatedTokenRepository.existsById(signedJWT.getJWTClaimsSet().getJWTID()))
             throw  new AppException(ErrorCode.UNAUTHENTICATED);
 
-        // Kiểm tra xem tài khoản có đang bị khóa (banned) hay không
         String userIdStr = signedJWT.getJWTClaimsSet().getSubject();
         Long userId = Long.parseLong(userIdStr);
         User user = userRepository.findById(userId)

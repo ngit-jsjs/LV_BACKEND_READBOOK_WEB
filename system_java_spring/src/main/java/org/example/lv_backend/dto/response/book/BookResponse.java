@@ -22,7 +22,6 @@ public class BookResponse {
     private String coverImageUrl;
 //    private String slug;
     private BookStatus status;
-    private Integer totalChapters;
     private BigDecimal averageRating;
     private String description;
     private String publisher;

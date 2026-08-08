@@ -23,32 +23,21 @@ public interface BookMapper {
     @Mapping(source = "user.name", target = "uploaderName")
     @Mapping(target = "authorId", source = "author.id")
     @Mapping(target = "publisherId", source = "publisher.id")
-    @Mapping(target = "author", source = "authorName")
-    @Mapping(target = "publisher", source = "publisherName")
+    @Mapping(target = "author", source = "author.name")
+    @Mapping(target = "publisher", source = "publisher.name")
     BookResponse toBookResponse(Book book);
 
     @Mapping(target = "categories", ignore = true)
     @Mapping(target = "author", ignore = true)
     @Mapping(target = "publisher", ignore = true)
-    @Mapping(target = "authorName", ignore = true)
-    @Mapping(target = "publisherName", ignore = true)
     Book toBook(BookCreationRequest request);
 
     @Mapping(target = "categories", ignore = true)
     @Mapping(target = "author", ignore = true)
     @Mapping(target = "publisher", ignore = true)
-    @Mapping(target = "authorName", ignore = true)
-    @Mapping(target = "publisherName", ignore = true)
     void updateBook(@MappingTarget Book book, BookCreationRequest request);
 
-    @AfterMapping
-    default void setTotalChapters(@MappingTarget BookResponse response, Book book) {
-        if (book.getChapters() != null) {
-            response.setTotalChapters(book.getChapters().size());
-        } else {
-            response.setTotalChapters(0);
-        }
-    }
+
 
     default Set<String> mapCategories(Set<Category> categories) {
         if (categories == null) {

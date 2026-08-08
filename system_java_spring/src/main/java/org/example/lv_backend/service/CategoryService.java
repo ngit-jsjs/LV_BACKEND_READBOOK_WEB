@@ -43,7 +43,7 @@ public class CategoryService {
 
     @Transactional(readOnly = true)
     public List<CategoryResponse> getAllCategoriesList() {
-        return categoryRepository.findAll(Sort.by(Sort.Direction.ASC, "name"))
+        return categoryRepository.findAll(Sort.by(Sort.Direction.DESC, "id"))
                 .stream()
                 .map(categoryMapper::toCategoryResponse)
                 .collect(Collectors.toList());
